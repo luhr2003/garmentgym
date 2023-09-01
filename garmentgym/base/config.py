@@ -97,7 +97,7 @@ class cloth_Config:
         self.cloth_pos=[0.0, 0, 0.0]
         self.cloth_size_scale=2
         self.cloth_size=[-1,-1]
-        self.cloth_stiff=(1.5, .04, .04)
+        self.cloth_stiff=(1.5, 0.04, 0.04)
         self.mesh_verts=None
         self.mesh_faces=None
         self.mesh_nocs_verts=None

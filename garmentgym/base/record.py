@@ -124,16 +124,16 @@ class cur_Info:
         self.mesh=trimesh.Trimesh(self.vertices,self.faces)
         self.points,self.colors=self.rgbd2pcd(self.rgb,self.depth)
         self.nonzero_indices=np.nonzero(self.depth.flatten())[0]
-        # print("calculating ray cast")
-        # for i in range(self.config.cloth_config.num_particles):
-        #     if self.is_vertex_visible(self.vertices[i],self.config.camera_config.cam_position,self.mesh):
-        #         self.visible_indices.append(i)
+        print("calculating ray cast")
+        for i in range(self.config.cloth_config.num_particles):
+            if self.is_vertex_visible(self.vertices[i],self.config.camera_config.cam_position,self.mesh):
+                self.visible_indices.append(i)
         self.partial_pcd_points=self.vertices[self.visible_indices]
         self.visible_vertices=self.vertices[self.visible_indices]
         self.world_points_map=self.pixel_to_world(self.depth,self.config.get_camera_matrix()[0],self.config.get_camera_matrix()[1])
         self.world_points=self.world_points_map.reshape(-1,3)
         self.world_points=self.world_points[self.nonzero_indices].reshape(-1,3)
-        # self.corr_idx=self.get_corr_idx(self.visible_vertices,self.world_points.reshape(-1,3))
+        self.corr_idx=self.get_corr_idx(self.visible_vertices,self.world_points.reshape(-1,3))
 
     @staticmethod
     def get_corr_idx(vertices, world_points):
@@ -197,6 +197,70 @@ class cross_Deform_info():
         self.clothes.update_info()
     def init(self):
         self.basic_info.prefix=self.prefix
+        self.basic_info.manipulate_time=0
+        self.basic_info.mesh_path=self.clothes.path
+        self.basic_info.mesh_id=self.clothes.id
+        
+        
+        
+        
+class task_cur_Info:
+    def __init__(self,config:Config):
+        self.position=None
+        self.vertices=None
+        self.edges=None
+        self.faces=None
+        self.rgb=None
+        self.depth=None
+        self.mesh=None
+        self.pcd=None
+        self.points=None
+        self.colors=None
+        self.velocities=None
+        self.config=config
+
+
+    def record(self):
+        self.position=pyflex.get_positions().reshape(-1,4)
+        self.vertices=self.position[:,:3]
+        self.edges=pyflex.get_edges()
+        self.faces=pyflex.get_faces().reshape(-1,3)
+        self.velocities=pyflex.get_velocities().reshape(-1,4)
+        self.rgb,self.depth=pyflex.render_cloth()
+        self.rgb=np.flip(self.rgb.reshape([self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],4]),0)[:,:,:3].astype(np.uint8)
+        self.depth=np.flip(self.depth.reshape([self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],1]),0).astype(np.float32)
+        self.depth[self.depth>3]=0
+        self.mesh=trimesh.Trimesh(self.vertices,self.faces)
+
+    
+    
+    
+    
+class task_info():
+    def __init__(self):
+        self.basic_info:Basic_info=Basic_info()
+        self.config:Config=None
+        self.clothes:Clothes=None
+        self.action=[]
+        self.rgb=None
+        self.depth=None
+        
+        
+    def __getitem__(self,key):
+        return getattr(self,key)
+    def __setitem__(self,key,value):
+        setattr(self,key,value)
+    def add(self,**kwargs):
+        for key in kwargs:
+            self[key]=kwargs[key]
+    def update(self,action):
+        self.cur_info=task_cur_Info(self.config)
+        self.cur_info.record()
+        self.action=action
+        self.basic_info.manipulate_time=len(self.action)
+        self.clothes.update_info()
+    
+    def init(self):
         self.basic_info.manipulate_time=0
         self.basic_info.mesh_path=self.clothes.path
         self.basic_info.mesh_id=self.clothes.id

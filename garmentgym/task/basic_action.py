@@ -10,6 +10,7 @@ import mesh_raycast
 
 curpath=os.getcwd()
 sys.path.append(curpath)
+sys.path.append(curpath+"/garmentgym")
 from garmentgym.utils.init_env import init_env
 import pyflex
 from garmentgym.base.clothes_env import ClothesEnv
@@ -46,7 +47,7 @@ class Basic_action(ClothesEnv):
         self.gui=gui
         self.gui=self.config.basic_config.gui
         center_object()
-        self.action_tool.reset([0,0.1,0])
+        self.action_tool.reset([0,0.2,0])
         print("init complete")
         pyflex.step()
         if gui:
@@ -117,13 +118,13 @@ class Basic_action(ClothesEnv):
         # execute action
         self.set_grasp(False)
         self.movep([prepick_pos], speed=8e-1)
-        self.movep([pick_pos], speed=6e-2)
+        self.movep([pick_pos], speed=6e-1)
         self.set_grasp(True)
-        self.movep([prepick_pos], speed=1e-2)
-        self.movep([preplace_pos], speed=2e-3)
-        self.movep([place_pos], speed=2e-3)
+        self.movep([prepick_pos], speed=1e-1)
+        self.movep([preplace_pos], speed=2e-2)
+        self.movep([place_pos], speed=2e-2)
         self.set_grasp(False)
-        self.movep([preplace_pos], speed=8e-3)
+        self.movep([preplace_pos], speed=8e-2)
         self.hide_end_effectors()
     
     def movep(self, pos, speed=None, limit=1000, min_steps=None, eps=1e-4):
@@ -313,7 +314,12 @@ def pixel_to_world_hard(pixel_point,camera_size):
                             
 if __name__ == "__main__":
     print("hello")
-    env=Basic_action("/home/luhr/garmentgym/garmentgym/cloth3d/train")
+    env=Basic_action("/home/luhr/garment/softgym_cloth/garmentgym/cloth3d/train")
+    env.hide_end_effectors()
+    for j in range(50):
+        pyflex.step()
+        pyflex.render()
+    env.move_key_points_inside()
     # /media/luhr/BAE7BC3408D3F9D7/study/correspondence/data/test_t1/Dress
     # "/media/luhr/BAE7BC3408D3F9D7/study/correspondence/data/test_t1/Jumpsuit"
     # /media/luhr/BAE7BC3408D3F9D7/study/correspondence/data/test_t1/Trousers
