@@ -124,16 +124,16 @@ class cur_Info:
         self.mesh=trimesh.Trimesh(self.vertices,self.faces)
         self.points,self.colors=self.rgbd2pcd(self.rgb,self.depth)
         self.nonzero_indices=np.nonzero(self.depth.flatten())[0]
-        print("calculating ray cast")
-        for i in range(self.config.cloth_config.num_particles):
-            if self.is_vertex_visible(self.vertices[i],self.config.camera_config.cam_position,self.mesh):
-                self.visible_indices.append(i)
+        # print("calculating ray cast")
+        # for i in range(self.config.cloth_config.num_particles):
+        #     if self.is_vertex_visible(self.vertices[i],self.config.camera_config.cam_position,self.mesh):
+        #         self.visible_indices.append(i)
         self.partial_pcd_points=self.vertices[self.visible_indices]
         self.visible_vertices=self.vertices[self.visible_indices]
         self.world_points_map=self.pixel_to_world(self.depth,self.config.get_camera_matrix()[0],self.config.get_camera_matrix()[1])
         self.world_points=self.world_points_map.reshape(-1,3)
         self.world_points=self.world_points[self.nonzero_indices].reshape(-1,3)
-        self.corr_idx=self.get_corr_idx(self.visible_vertices,self.world_points.reshape(-1,3))
+        # self.corr_idx=self.get_corr_idx(self.visible_vertices,self.world_points.reshape(-1,3))
 
     @staticmethod
     def get_corr_idx(vertices, world_points):

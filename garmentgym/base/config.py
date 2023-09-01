@@ -97,14 +97,14 @@ class cloth_Config:
         self.cloth_pos=[0.0, 0, 0.0]
         self.cloth_size_scale=2
         self.cloth_size=[-1,-1]
-        self.cloth_stiff=(0.75, .02, .02)
+        self.cloth_stiff=(1.5, .04, .04)
         self.mesh_verts=None
         self.mesh_faces=None
         self.mesh_nocs_verts=None
         self.mesh_shear_edges=None
         self.mesh_bend_edges=None
         self.mesh_stretch_edges=None
-        self.cloth_mass=50
+        self.cloth_mass=5
         self.flip_mesh=0
         self.num_particles=-1
     def update(self,kwargs):
