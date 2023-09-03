@@ -219,6 +219,44 @@ class task_cur_Info:
         self.velocities=None
         self.config=config
 
+    def rgbd2pcd(self,rgb,depth):
+        # 找到非零深度值的索引
+        height,width = depth.shape[:2]
+        depth=depth.flatten()
+        nonzero_indices = np.nonzero(depth)[0]
+        # 计算对应的像素坐标
+        u, v = np.meshgrid(range(width), range(height))
+        u = u.flatten()
+        v = v.flatten()
+
+        # 获取相机内参
+        intrinsic_matrix=Config().get_camera_matrix()[0]
+        camera_intrinsics = o3d.camera.PinholeCameraIntrinsic(Config().camera_config.cam_size[0], Config().camera_config.cam_size[1],fx=intrinsic_matrix[0,0],fy=intrinsic_matrix[1,1],cx=intrinsic_matrix[0,2],cy=intrinsic_matrix[1,2])
+        fx = camera_intrinsics.intrinsic_matrix[0, 0]
+        fy = camera_intrinsics.intrinsic_matrix[1, 1]
+        cx = camera_intrinsics.intrinsic_matrix[0, 2]
+        cy = camera_intrinsics.intrinsic_matrix[1, 2]
+
+        # 计算三维坐标
+        z = depth[nonzero_indices]
+        x = (u[nonzero_indices] - cx) * z / fx
+        y = (v[nonzero_indices] - cy) * z / fy
+
+        points = np.column_stack((x, y, z))
+
+        # 获取颜色值
+        colors = rgb.reshape(-1, 3) / 255.0
+        colors = colors[nonzero_indices]
+
+
+        point_cloud=o3d.geometry.PointCloud()
+        point_cloud.points=o3d.utility.Vector3dVector(points)
+        point_cloud.colors=o3d.utility.Vector3dVector(colors)
+        return points,colors
+
+
+
+
 
     def record(self):
         self.position=pyflex.get_positions().reshape(-1,4)
@@ -231,6 +269,7 @@ class task_cur_Info:
         self.depth=np.flip(self.depth.reshape([self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],1]),0).astype(np.float32)
         self.depth[self.depth>3]=0
         self.mesh=trimesh.Trimesh(self.vertices,self.faces)
+        self.points,self.colors=self.rgbd2pcd(self.rgb,self.depth)
 
     
     

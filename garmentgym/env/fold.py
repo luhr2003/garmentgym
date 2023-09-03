@@ -79,7 +79,7 @@ class FoldEnv(ClothesEnv):
         self, p1, p2, lift_height=0.2):
         # prepare primitive params
         pick_pos, place_pos = p1.copy(), p2.copy()
-        pick_pos[1]=0.01
+        pick_pos[1]=0.03
         place_pos[1]=0.05
 
         prepick_pos = pick_pos.copy()
