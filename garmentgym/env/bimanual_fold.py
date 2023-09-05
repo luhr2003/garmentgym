@@ -10,6 +10,7 @@ import tqdm
 
 curpath=os.getcwd()
 sys.path.append(curpath)
+sys.path.append(curpath+"/garmentgym")   
 
 import open3d as o3d
 from garmentgym.garmentgym.utils.init_env import init_env
@@ -121,15 +122,15 @@ class BimanualFoldEnv(ClothesEnv):
 
 
 
-    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.05):
+    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
 
         pick_pos1[1] += down_height
-        place_pos1[1] += 0.03 + 0.05
+        place_pos1[1] += 0.2
         pick_pos2[1] += down_height
-        place_pos2[1] += 0.03 + 0.05
+        place_pos2[1] += 0.2
 
         prepick_pos1 = pick_pos1.copy()
         prepick_pos1[1] = lift_height
@@ -145,9 +146,9 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_movep([prepick_pos1, prepick_pos2], speed=8e-2)  # 修改此处
         self.two_movep([pick_pos1, pick_pos2], speed=3e-2)  # 修改此处
         self.set_grasp([True, True])
-        self.two_movep([prepick_pos1, prepick_pos2], speed=4e-3)  # 修改此处
-        self.two_movep([preplace_pos1, preplace_pos2], speed=4e-3)  # 修改此处
-        self.two_movep([place_pos1, place_pos2], speed=4e-3)  # 修改此处
+        self.two_movep([prepick_pos1, prepick_pos2], speed=8e-3)  # 修改此处
+        self.two_movep([preplace_pos1, preplace_pos2], speed=8e-3)  # 修改此处
+        self.two_movep([place_pos1, place_pos2], speed=8e-3)  # 修改此处
         self.set_grasp([False, False])
         self.two_movep([preplace_pos1, preplace_pos2], speed=8e-2)  # 修改此处
         self.two_hide_end_effectors()
@@ -327,15 +328,15 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_movep([preplace_pos1,preplace_pos2], speed=1e-2)
         self.two_hide_end_effectors()
         
-    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.03):
+    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.2,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
 
         pick_pos1[1] += down_height
-        place_pos1[1] += 0.03 + 0.05
+        place_pos1[1] += 0.2
         pick_pos2[1] += down_height
-        place_pos2[1] += 0.03 + 0.05
+        place_pos2[1] += 0.2
 
         prepick_pos1 = pick_pos1.copy()
         prepick_pos1[1] = lift_height
@@ -353,7 +354,7 @@ class BimanualFoldEnv(ClothesEnv):
         self.set_grasp([True, True])
         self.two_movep([prepick_pos1, prepick_pos2], speed=1e-2)  # 修改此处
         self.two_movep([preplace_pos1,prepick_pos2], speed=1e-2)  # 修改此处
-        self.two_movep([place_pos1,prepick_pos2], speed=1e-2) 
+        self.two_movep([preplace_pos1,prepick_pos2], speed=1e-2) 
         self.set_grasp([False,True])
         self.two_movep([prepick_pos1,preplace_pos2], speed=1e-2) 
         self.two_movep([prepick_pos1, place_pos2], speed=1e-2)  # 修改此处

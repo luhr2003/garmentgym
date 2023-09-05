@@ -239,6 +239,83 @@ class FoldEnv(ClothesEnv):
             action=np.array(action)
             self.action_tool.step(action)
         raise MoveJointsException
+
+    def move_sleeve(self):
+        left_id=self.clothes.top_left
+        right_id=self.clothes.top_right
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_pos=cur_pos[left_id]
+        cur_right_pos=cur_pos[right_id]
+        next_left_pos=deepcopy(cur_left_pos)
+        next_left_pos[0]+=random.uniform(-0.5,0.5)
+        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-0.5,0.5)
+        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+    def move_bottom(self):
+        left_id=self.clothes.bottom_left
+        right_id=self.clothes.bottom_right
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_pos=cur_pos[left_id]
+        cur_right_pos=cur_pos[right_id]
+        next_left_pos=deepcopy(cur_left_pos)
+        next_left_pos[0]+=random.uniform(-0.5,0.5)
+        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-0.5,0.5)
+        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+    
+
+    
+    def move_middle(self):
+        middle_id=self.clothes.middle_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_middle_pos=cur_pos[middle_id]
+        next_middle_pos=deepcopy(cur_middle_pos)
+        next_middle_pos[0]+=random.uniform(-0.5,0.5)
+        next_middle_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_middle_pos,next_middle_pos)
+    
+    def move_left_right(self):
+        left_id=self.clothes.left_point
+        right_id=self.clothes.right_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_pos=cur_pos[left_id]
+        cur_right_pos=cur_pos[right_id]
+        next_left_pos=deepcopy(cur_left_pos)
+        next_left_pos[0]+=random.uniform(-0.5,0.5)
+        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-0.5,0.5)
+        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+    def move_top_bottom(self):
+        top_id=self.clothes.top_point
+        bottom_id=self.clothes.bottom_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_top_pos=cur_pos[top_id]
+        cur_bottom_pos=cur_pos[bottom_id]
+        next_top_pos=deepcopy(cur_top_pos)
+        next_top_pos[0]+=random.uniform(-0.5,0.5)
+        next_top_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_top_pos,next_top_pos)
+        cur_bottom_pos=deepcopy(cur_bottom_pos)
+        next_bottom_pos=deepcopy(cur_bottom_pos)
+        next_bottom_pos[0]+=random.uniform(-0.5,0.5)
+        next_bottom_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
+
+
+        
+
     
     def execute_action(self,action):
         function=action[0]
