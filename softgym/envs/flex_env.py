@@ -3,7 +3,6 @@ import copy
 from gym import error
 import numpy as np
 import gym
-from softgym.clothes_env.base.config import Config
 from softgym.utils.visualization import save_numpy_as_gif
 import cv2
 import os.path as osp
@@ -28,16 +27,10 @@ class FlexEnv(gym.Env):
                  camera_name='default_camera',
                  deterministic=True,
                  use_cached_states=True,
-                 save_cached_states=True, config:Config=None):
-        self.config=config
-        if config is None:
-            self.camera_params, self.camera_width, self.camera_height, self.camera_name = {}, camera_width, camera_height, camera_name
-            self.headless=headless
-            self.render_c=render
-        else:
-            self.camera_params, self.camera_width, self.camera_height, self.camera_name = self.config.camera_config,self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],self.config.camera_config.name
-            self.headless=self.config.task_config.headless
-            self.render_c=self.config.task_config.render
+                 save_cached_states=True):
+        self.camera_params, self.camera_width, self.camera_height, self.camera_name = {}, camera_width, camera_height, camera_name
+        self.headless=headless
+        self.render_c=render
         pyflex.init(self.headless,self.render_c,self.camera_width,self.camera_height)
 
         self.record_video, self.video_path, self.video_name = False, None, None
