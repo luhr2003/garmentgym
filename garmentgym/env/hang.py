@@ -49,7 +49,7 @@ class HangEnv(ClothesHangEnv):
         self.empty_scene(self.config)
         self.add_cloth(self.config)
         self.action_tool.reset([0,0.5,0])
-        self.add_hang()
+        self.add_hang()# modify this to fucntion to add more hanging
         pyflex.step()
         pyflex.render()
         
@@ -122,7 +122,10 @@ class HangEnv(ClothesHangEnv):
         self.movep([preplace_pos], speed=8e-2)
         self.hide_end_effectors()
     
+
+    
     def pick(self,p1,p2):
+        '''a demo funciton to show clothes can hang up sucessfully'''
         self.set_grasp(False)
         self.movep([p1], speed=2e-2)
         self.set_grasp(True)
@@ -272,6 +275,8 @@ class HangEnv(ClothesHangEnv):
             self.pick_change_nodown(arg[0],arg[1],arg[2])
 
 if __name__=="__main__":
+    #change mesh_category path to your own path
+    #change id to demo shirt id
     env=HangEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044")
     env.update_camera(1)
     for j in range(100):

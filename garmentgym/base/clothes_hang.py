@@ -108,8 +108,14 @@ class ClothesHangEnv(FlexEnv):
 
     def get_default_config(self):
         return self.config 
-    
+
     def add_hang(self):
+        '''
+        modify this function to change the position of the hang
+        center is the position of the hang
+        param is the parameter of the hang which orginized as length*height*width
+        you can modify the quat to change the orientation of the hang
+        '''
         # 添加立柱
         center_vertic=[0.8,0,-0.8]
         quat = self.quatFromAxisAngle([0, 0, -1.], 0.)
