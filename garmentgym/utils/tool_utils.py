@@ -113,32 +113,29 @@ class Picker(ActionToolBase):
         pos = pyflex.get_shape_states()
         pyflex.set_shape_states(pos)
 
-    @staticmethod
-    def _get_picker_pos():
+    def _get_picker_pos(self):
         """ 
         Get the current pos of the pickers
         """
         picker_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)
-        return picker_pos[:, :3]
+        return picker_pos[:self.num_picker, :3]
 
 
-    @staticmethod
-    def _get_pos():
+    def _get_pos(self):
         """ 
         Get the current pos of the pickers and the particles,
          along with the inverse mass of each particle
         """
-        picker_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)
+        picker_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)[:1,]
         particle_pos = np.array(pyflex.get_positions()).reshape(-1, 4)
-        tmp_picker_pos = deepcopy(picker_pos[:, :3])
+        tmp_picker_pos = deepcopy(picker_pos[:self.num_picker, :3])
         
-        return picker_pos[:, :3], particle_pos
+        return picker_pos[:self.num_picker, :3], particle_pos
 
-    @staticmethod
-    def _set_pos(picker_pos, particle_pos):
+    def _set_pos(self,picker_pos, particle_pos):
         shape_states = np.array(pyflex.get_shape_states()).reshape(-1, 14)
-        shape_states[:, 3:6] = shape_states[:, :3]
-        shape_states[:, :3] = picker_pos
+        shape_states[:self.num_picker, 3:6] = shape_states[:self.num_picker, :3]
+        shape_states[:self.num_picker, :3] = picker_pos
         pyflex.set_shape_states(shape_states)
         pyflex.set_positions(particle_pos)
         pyflex.step()
@@ -238,8 +235,8 @@ class PickerPickPlace(Picker):
 
     def _set_picker_pos(self,picker_pos):
         shape_states = np.array(pyflex.get_shape_states()).reshape(-1, 14)
-        shape_states[:, 3:6] = shape_states[:, :3]
-        shape_states[:, :3] = picker_pos
+        shape_states[:self.num_picker, 3:6] = shape_states[:, :3]
+        shape_states[:self.num_picker, :3] = picker_pos
         pyflex.set_shape_states(shape_states)
         pyflex.step()
         pyflex.render()
@@ -256,7 +253,7 @@ class PickerPickPlace(Picker):
         """
         total_steps = 0
         action = action.reshape(-1, 4)
-        curr_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)[:, :3]
+        curr_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)[:self.num_picker, :3]
         end_pos = np.vstack([picker_pos
                              for picker_pos in action[:, :3]])
         dist = np.linalg.norm(curr_pos - end_pos, axis=1)
@@ -266,7 +263,7 @@ class PickerPickPlace(Picker):
         delta = (end_pos - curr_pos) / num_step
         norm_delta = np.linalg.norm(delta)
         for i in range(int(min(num_step, self.steps_limit))):
-            curr_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)[:, :3]
+            curr_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)[:self.num_picker, :3]
             dist = np.linalg.norm(end_pos - curr_pos, axis=1)
             if np.alltrue(dist < norm_delta):
                 delta = end_pos - curr_pos

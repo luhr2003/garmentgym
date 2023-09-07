@@ -88,7 +88,8 @@ class camera_Config:
         self.__init__()
     def __call__(self):
         val=self.__dict__
-        val.pop('name')
+        if 'name' in val:
+            val.pop('name')
         return val
     
 class cloth_Config:
