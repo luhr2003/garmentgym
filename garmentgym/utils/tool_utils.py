@@ -126,7 +126,7 @@ class Picker(ActionToolBase):
         Get the current pos of the pickers and the particles,
          along with the inverse mass of each particle
         """
-        picker_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)[:1,]
+        picker_pos = np.array(pyflex.get_shape_states()).reshape(-1, 14)
         particle_pos = np.array(pyflex.get_positions()).reshape(-1, 4)
         tmp_picker_pos = deepcopy(picker_pos[:self.num_picker, :3])
         
@@ -232,6 +232,7 @@ class PickerPickPlace(Picker):
         super().__init__(num_picker=num_picker, **kwargs)
         self.delta_move = 1.0
         self.steps_limit = steps_limit
+        self.num_picker=num_picker
 
     def _set_picker_pos(self,picker_pos):
         shape_states = np.array(pyflex.get_shape_states()).reshape(-1, 14)
