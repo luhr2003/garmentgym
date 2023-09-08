@@ -39,7 +39,7 @@ from garmentgym.garmentgym.base.record import task_info
 
 
 
-class DoubleHangEnv(ClothesHangEnv):
+class BimanualHangEnv(ClothesHangEnv):
     def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=-1):
         self.config=Config(task_config)
         self.id=id
@@ -178,7 +178,7 @@ class DoubleHangEnv(ClothesHangEnv):
     
     
     def two_pick_change_nodown(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.5):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -217,7 +217,7 @@ class DoubleHangEnv(ClothesHangEnv):
         self.two_movep([preplace_pos1,preplace_pos2], speed=8e-2)
         self.two_hide_end_effectors()
 
-    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.5,down_height=0.03):
+    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.4,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
@@ -244,22 +244,42 @@ class DoubleHangEnv(ClothesHangEnv):
         self.two_movep([prepick_pos1, prepick_pos2], speed=1e-2)  # 修改此处
         self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
         self.two_movep([place_pos1, place_pos2], speed=1e-2)  # 修改此处
-        self.set_grasp([False, False])
-        self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
-        self.two_hide_end_effectors()
+        # self.set_grasp([False, False])
+        # self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
+        # self.two_hide_end_effectors()
         
+
+
+    def two_final(self, p1_e, p2_e,lift_height=0.5,down_height=0.03):
+    # prepare primitive params
+        place_pos1 = p1_e.copy()
+        place_pos2 = p2_e.copy()
+        place_pos1[1] += 0.03 + 0.05
+        place_pos2[1] += 0.03 + 0.05
+
+        # execute action
+        self.set_grasp([True, True])
+        self.two_movep([place_pos1, place_pos2], speed=2e-2)  # 修改此处
+        self.set_grasp([False, False])
+        self.two_hide_end_effectors()
+
+    def two_hang_trajectory(self,p1s,p2s):
+        p1e=[0.37,1.55,-0.51]
+        p2e=[0.62,1.55,-0.42]
+        self.two_pick_and_place_primitive(p1s,p1e,p2s,p2e)
+        p1f=[0.5,1.2,-0.64]
+        p2f=[0.75,1.2,-0.55]
+        self.two_final(p1f,p2f)
+
 
     
     
     def two_movep(self, pos, speed=None, limit=1000, min_steps=None, eps=1e-4):
         if speed is None:
             speed = 0.08
-        print(pos)
         target_pos = np.array(pos)
         for step in range(limit):
             curr_pos = self.action_tool._get_pos()[0]
-            print("curr_pos",curr_pos)  
-            print("targer_pos",target_pos)
             deltas = [(targ - curr)
                       for targ, curr in zip(target_pos, curr_pos)]
             dists = [np.linalg.norm(delta) for delta in deltas]
@@ -292,7 +312,7 @@ class DoubleHangEnv(ClothesHangEnv):
         self.movep([[0.5, 0.5, -1]], speed=5e-2)
         
     def two_hide_end_effectors(self):
-        self.two_movep([[0.5, 0.5, -1],[0.5,0.5,-1]], speed=5e-2)
+        self.two_movep([[0.5, 2.0, -1],[0.5,2.0,-1]], speed=5e-2)
         
 
     def set_grasp(self, grasp):
@@ -345,12 +365,13 @@ class DoubleHangEnv(ClothesHangEnv):
         next_left_pos=deepcopy(cur_left_pos)
         next_left_pos[0]+=random.uniform(-0.5,0.5)
         next_left_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
         next_right_pos[0]+=random.uniform(-0.5,0.5)
         next_right_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_bottom(self):
         left_id=self.clothes.bottom_left
         right_id=self.clothes.bottom_right
@@ -360,12 +381,13 @@ class DoubleHangEnv(ClothesHangEnv):
         next_left_pos=deepcopy(cur_left_pos)
         next_left_pos[0]+=random.uniform(-0.5,0.5)
         next_left_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
         next_right_pos[0]+=random.uniform(-0.5,0.5)
         next_right_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
 
     
@@ -387,12 +409,13 @@ class DoubleHangEnv(ClothesHangEnv):
         next_left_pos=deepcopy(cur_left_pos)
         next_left_pos[0]+=random.uniform(-0.5,0.5)
         next_left_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
         next_right_pos[0]+=random.uniform(-0.5,0.5)
         next_right_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_top_bottom(self):
         top_id=self.clothes.top_point
         bottom_id=self.clothes.bottom_point
@@ -402,12 +425,13 @@ class DoubleHangEnv(ClothesHangEnv):
         next_top_pos=deepcopy(cur_top_pos)
         next_top_pos[0]+=random.uniform(-0.5,0.5)
         next_top_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_top_pos,next_top_pos)
+        # self.pick_and_place_primitive(cur_top_pos,next_top_pos)
         cur_bottom_pos=deepcopy(cur_bottom_pos)
         next_bottom_pos=deepcopy(cur_bottom_pos)
         next_bottom_pos[0]+=random.uniform(-0.5,0.5)
         next_bottom_pos[2]+=random.uniform(-0.5,0.5)
-        self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
+        # self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
+        self.two_pick_and_place_primitive(cur_top_pos,next_top_pos,cur_bottom_pos,next_bottom_pos)
 
 
         
@@ -424,11 +448,13 @@ class DoubleHangEnv(ClothesHangEnv):
             self.pick_and_change_route(arg[0],arg[1],arg[2])
         elif function=="pick_change_nodown":
             self.pick_change_nodown(arg[0],arg[1],arg[2])
+        elif function=="two_hang_trajectory":
+            self.two_hang_trajectory(arg[0],arg[1])
 
 if __name__=="__main__":  
     #change mesh_category path to your own path
     #change id to demo shirt id
-    env=DoubleHangEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044")
+    env=BimanualHangEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044")
     env.update_camera(1)
     for j in range(100):
         pyflex.step()
@@ -436,10 +462,20 @@ if __name__=="__main__":
         
         
     flat_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-    env.two_pick_and_place_primitive(flat_pos[env.clothes.left_shoulder],flat_pos[env.clothes.right_shoulder],[0.6,1.5,-0.5],[0.7,1.5,-0.5])
-    # env.two_pick_change_nodown([1,1,1],[0.5,1,1],[1,2,3],[1,1,2],[-0.2,1,0.4],[1,2,0.6])
+    env.update_camera(0)
+    left_collor=flat_pos[env.clothes.left_shoulder].copy()
+    left_collor[0]+=0.06
+    left_collor[2]+=0.08
+    
+    right_collor=flat_pos[env.clothes.right_shoulder].copy()
+    right_collor[0]-=0.06
+    right_collor[2]+=0.08
+    
+    # env.two_pick_and_place_primitive(left_collor,[0.37,1.55,-0.51],right_collor,[0.62,1.55,-0.42])
+    # env.two_final([0.5,1.2,-0.64],[0.75,1.2,-0.55])
+    #env.two_pick_change_nodown(flat_pos[env.clothes.left_shoulder],[0.4,1.8,-0.54],[0.45,1.2,-0.59],flat_pos[env.clothes.right_shoulder],[0.65,1.8,-0.45],[0.7,1.2,-0.5])
     #env.pick([0,0,0],[0.8,1.5,-0.8])
-        
+    env.two_hang_trajectory(left_collor,right_collor)
     
     
         
