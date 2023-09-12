@@ -48,6 +48,11 @@ class BimanualHangEnv(ClothesHangEnv):
         self.store_path=store_path
         self.empty_scene(self.config)
         self.add_cloth(self.config)
+        
+        self.cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+        self.cloth_pos=self.cur_pos[:self.clothes.mesh.num_particles]
+        
+        
         self.action_tool.reset([0,0.5,0])
         self.add_hang()# modify this to fucntion to add more hanging
         pyflex.step()
@@ -264,11 +269,15 @@ class BimanualHangEnv(ClothesHangEnv):
         self.two_hide_end_effectors()
 
     def two_hang_trajectory(self,p1s,p2s):
-        p1e=[0.37,1.55,-0.51]
-        p2e=[0.62,1.55,-0.42]
+        p1e=[0.3,2.6,-0.41]
+        p2e=[0.54,2.6,-0.33]
+        #p1e=[0.37,1.55,-0.51]
+        #p2e=[0.62,1.55,-0.42]
         self.two_pick_and_place_primitive(p1s,p1e,p2s,p2e)
-        p1f=[0.5,1.2,-0.64]
-        p2f=[0.75,1.2,-0.55]
+        p1f=[0.64,1.8,-0.78]
+        p2f=[0.89,1.8,-0.69]
+        # p1f=[0.5,1.2,-0.64]
+        # p2f=[0.75,1.2,-0.55]
         self.two_final(p1f,p2f)
 
 
@@ -433,6 +442,21 @@ class BimanualHangEnv(ClothesHangEnv):
         # self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
         self.two_pick_and_place_primitive(cur_top_pos,next_top_pos,cur_bottom_pos,next_bottom_pos)
 
+    def shoudle_random(self):
+        cur_pos=np.array(pyflex.get_positions())[:,:3]
+        left_shoulder_id=self.clothes.left_shoulder
+        right_shoulder_id=self.clothes.right_shoulder
+        left_pos=cur_pos[left_shoulder_id]
+        right_pos=cur_pos[right_shoulder_id]
+        next_left_pos=deepcopy(left_pos)
+        next_right_pos=deepcopy(right_pos)
+        next_left_pos[1]+=random.uniform(0,1)
+        next_right_pos[1]+=random.uniform(0,1)
+        self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos)
+        for j in range(50):
+            pyflex.step()
+            pyflex.render()
+        
 
         
 

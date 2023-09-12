@@ -31,7 +31,7 @@ class ClothesHangEnv(FlexEnv):
         #                                        picker_low=(-5, 0., -5), picker_high=(5, 5, 5),picker_radius=config.task_config.picker_radius,picker_size=config.task_config.picker_size)
         self.up_camera=config["camera_config"]()
         self.vertice_camera=deepcopy(config.camera_config)
-        self.vertice_camera.cam_position=[0, 2.5, 2.5]
+        self.vertice_camera.cam_position=[0, 3.5, 2.5]
         self.vertice_camera.cam_angle=[0,-np.pi/5,0]
     
     def update_camera(self,id):
@@ -120,13 +120,13 @@ class ClothesHangEnv(FlexEnv):
         center_vertic=[0.8,0,-0.8]
         quat = self.quatFromAxisAngle([0, 0, -1.], 0.)
         # 长*高*宽
-        param_vertic=np.array([0.05,1,0.05])
+        param_vertic=np.array([0.05,1.9,0.05])
         pyflex.add_box(param_vertic,center_vertic,quat)
 
         # 添加横杆
         quat = self.quatFromAxisAngle([0, 1, -1.], np.pi/3)
-        center_horiz=[0.8,0.7,-0.8]
-        param_horiz=np.array([0.5,0.02,0.02])
+        center_horiz=[0.8,1.7,-0.8]
+        param_horiz=np.array([0.6,0.02,0.02])
         pyflex.add_box(param_horiz,center_horiz,quat)
 
         hang_state=pyflex.get_shape_states()
@@ -140,7 +140,7 @@ class ClothesHangEnv(FlexEnv):
 
 if __name__=="__main__":
     config=Config()
-    env=ClothesHangEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",config=config)
+    env=ClothesHangEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",config=config)
     env.empty_scene(config)
     env.add_cloth(config)
     for j in range(100):

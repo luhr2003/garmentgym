@@ -48,6 +48,11 @@ class HangEnv(ClothesHangEnv):
         self.store_path=store_path
         self.empty_scene(self.config)
         self.add_cloth(self.config)
+        
+        self.cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+        self.cloth_pos=self.cur_pos[:self.clothes.mesh.num_particles]
+        
+        
         self.action_tool.reset([0,0.5,0])
         self.add_hang()# modify this to fucntion to add more hanging
         pyflex.step()
@@ -97,6 +102,27 @@ class HangEnv(ClothesHangEnv):
         self.set_grasp(False)
         self.movep([preplace_pos], speed=10e-2)
         self.hide_end_effectors()
+    def pick_and_hold(
+        self, p1, p2, lift_height=0.2):
+        # prepare primitive params
+        pick_pos, place_pos = p1.copy(), p2.copy()
+        pick_pos[1]=0.03
+        place_pos[1]=0.05
+
+        prepick_pos = pick_pos.copy()
+        prepick_pos[1] = lift_height
+        preplace_pos = place_pos.copy()
+        preplace_pos[1] = lift_height
+
+        # execute action
+        self.set_grasp(False)
+        self.movep([prepick_pos], speed=8e-2)
+        self.movep([pick_pos], speed=6e-2)
+        self.set_grasp(True)
+        self.movep([prepick_pos], speed=1e-2)
+        self.movep([preplace_pos], speed=2e-2)
+        self.movep([place_pos], speed=1e-2)
+        self.set_grasp(True)
         
     def top_pick_and_place_primitive(
         self, p1, p2, lift_height=0.3):
@@ -160,19 +186,24 @@ class HangEnv(ClothesHangEnv):
         self.hide_end_effectors()
 
     def hang_trajectory(self,p1):
-        self.set_grasp(False)
-        self.movep([p1],speed=2e-2)
-        self.set_grasp(True)
+        # self.set_grasp(False)
+        # self.movep([p1],speed=2e-2)
+        # self.set_grasp(True)
         p1_high=p1.copy()
         p1_high[1]+=0.2
-        self.movep([p1_high],speed=2e-2)
+        # self.movep([p1_high],speed=2e-2)
+        self.pick_and_hold(p1,p1_high)
         self.set_grasp(True)
-        self.update_camera(0)
-        p1=[0.65,1.5,-0.5]
+        self.update_camera(1)
+        # p1=[0.52,1.5,-0.4]
+        p1=[0.49,2.5,-0.4]
+        #p1=[0.65,1.5,-0.5]
         self.movep([p1],speed=2e-2)
         self.set_grasp(True)
         self.update_camera(1)
-        p1=[0.7,1.2,-0.64]
+        # p1=[0.67,1.1,-0.5]
+        p1=[0.75,1.8,-0.63]
+        #p1=[0.7,1.2,-0.64]
         self.movep([p1],speed=2e-2)
         self.set_grasp(False)
         self.hide_end_effectors()
@@ -256,6 +287,22 @@ class HangEnv(ClothesHangEnv):
         next_right_pos[2]+=random.uniform(-0.5,0.5)
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     
+    def move_shoulders(self):
+        right_shoulder_id=self.clothes.right_shoulder
+        left_shoulder_id=self.clothes.left_shoulder
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_right_shoulder_pos=cur_pos[right_shoulder_id]
+        next_right_shoulder_pos=deepcopy(cur_right_shoulder_pos)
+        next_right_shoulder_pos[0]+=random.uniform(0,1)
+        next_right_shoulder_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_right_shoulder_pos,next_right_shoulder_pos)
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_shoulder_pos=cur_pos[left_shoulder_id]
+        next_left_shoulder_pos=deepcopy(cur_left_shoulder_pos)
+        next_left_shoulder_pos[0]+=random.uniform(-1,0)
+        next_left_shoulder_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_left_shoulder_pos,next_left_shoulder_pos)
+
 
     
     def move_middle(self):
@@ -272,12 +319,12 @@ class HangEnv(ClothesHangEnv):
         right_id=self.clothes.right_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         cur_left_pos=cur_pos[left_id]
-        cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
         next_left_pos[0]+=random.uniform(-0.5,0.5)
         next_left_pos[2]+=random.uniform(-0.5,0.5)
         self.pick_and_place_primitive(cur_left_pos,next_left_pos)
-        cur_right_pos=deepcopy(cur_right_pos)
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_right_pos=cur_pos[right_id]
         next_right_pos=deepcopy(cur_right_pos)
         next_right_pos[0]+=random.uniform(-0.5,0.5)
         next_right_pos[2]+=random.uniform(-0.5,0.5)
@@ -287,12 +334,12 @@ class HangEnv(ClothesHangEnv):
         bottom_id=self.clothes.bottom_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         cur_top_pos=cur_pos[top_id]
-        cur_bottom_pos=cur_pos[bottom_id]
         next_top_pos=deepcopy(cur_top_pos)
         next_top_pos[0]+=random.uniform(-0.5,0.5)
-        next_top_pos[2]+=random.uniform(-0.5,0.5)
+        next_top_pos[2]+=random.uniform(-1,0)
         self.pick_and_place_primitive(cur_top_pos,next_top_pos)
-        cur_bottom_pos=deepcopy(cur_bottom_pos)
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_bottom_pos=cur_pos[bottom_id]
         next_bottom_pos=deepcopy(cur_bottom_pos)
         next_bottom_pos[0]+=random.uniform(-0.5,0.5)
         next_bottom_pos[2]+=random.uniform(-0.5,0.5)
@@ -325,7 +372,7 @@ class HangEnv(ClothesHangEnv):
 if __name__=="__main__":
     #change mesh_category path to your own path
     #change id to demo shirt id
-    env=HangEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044")
+    env=HangEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044")
     env.update_camera(1)
     for j in range(100):
         pyflex.step()
@@ -337,9 +384,9 @@ if __name__=="__main__":
     
     middle_shoulder =flat_pos[env.clothes.right_shoulder][:3]
     middle_shoulder[0]=(flat_pos[env.clothes.left_shoulder][0]+middle_shoulder[0])/2
-    middle_shoulder[2]+=0.05
+    middle_shoulder[2]+=0.15
        
-    # env.update_camera(1)
+    env.update_camera(1)
     # env.start_step(middle_shoulder)
     # env.update_camera(0)
     # env.middle_step([0.65,1.5,-0.5])
