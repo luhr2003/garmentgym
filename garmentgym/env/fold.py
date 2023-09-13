@@ -40,7 +40,7 @@ from garmentgym.garmentgym.base.record import task_info
 
 
 class FoldEnv(ClothesEnv):
-    def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=-1):
+    def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=None):
         self.config=Config(task_config)
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
