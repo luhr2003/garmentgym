@@ -314,7 +314,7 @@ def pixel_to_world_hard(pixel_point,camera_size):
                             
 if __name__ == "__main__":
     print("hello")
-    env=Basic_action("/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train")
+    env=Basic_action("/home/luhr/correspondence/softgym_cloth/garmentgym/dress")
     env.hide_end_effectors()
     for j in range(50):
         pyflex.step()

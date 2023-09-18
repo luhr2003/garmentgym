@@ -247,8 +247,8 @@ class FoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0)
-        next_left_pos[2]+=random.uniform(0,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,0.5)
+        next_left_pos[2]+=random.uniform(0.5,0.5)
         self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)

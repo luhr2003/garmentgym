@@ -90,6 +90,7 @@ class FlingEnv(ClothesEnv):
         self.num_particles = 100000    #我瞎改的
         self.fling_speed=8e-3
         self.adaptive_fling_momentum=1
+        self.particle_radius=0.00625
         
         
         
@@ -328,7 +329,7 @@ class FlingEnv(ClothesEnv):
         # if self.dump_visualizations:
         #     self.movep([left_grasp_pos, right_grasp_pos], min_steps=10)
 
-        PRE_FLING_HEIGHT = 1.3
+        PRE_FLING_HEIGHT = 1.8
         #lift up cloth
         self.fling_movep([[left_grasp_pos[0], PRE_FLING_HEIGHT, left_grasp_pos[2]],\
              [right_grasp_pos[0], PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=9e-3)
@@ -455,8 +456,161 @@ class FlingEnv(ClothesEnv):
             self.fling_movep([left, right], speed=5e-4)
             if grasp_dist > max_grasp_dist:
                 return max_grasp_dist
+            
+    
+    def move_sleeve(self):
+        left_id=self.clothes.top_left
+        right_id=self.clothes.top_right
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_pos=cur_pos[left_id]
+        cur_right_pos=cur_pos[right_id]
+        next_left_pos=deepcopy(cur_left_pos)
+        next_left_pos[0]+=random.uniform(-0.2,1)
+        next_left_pos[2]+=random.uniform(-0.4,0.4)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-1,0.2)
+        next_right_pos[2]+=random.uniform(-0.4,0.4)
+        # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
+    def move_bottom(self):
+        left_id=self.clothes.bottom_left
+        right_id=self.clothes.bottom_right
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_pos=cur_pos[left_id]
+        cur_right_pos=cur_pos[right_id]
+        next_left_pos=deepcopy(cur_left_pos)
+        next_left_pos[0]+=random.uniform(-0.5,1)
+        next_left_pos[2]+=random.uniform(-1,0.5)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-1,0.5)
+        next_right_pos[2]+=random.uniform(-1,0.5)
+        # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
+    
+
+    
+    def move_middle(self):
+        middle_id=self.clothes.middle_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_middle_pos=cur_pos[middle_id]
+        next_middle_pos=deepcopy(cur_middle_pos)
+        next_middle_pos[0]+=random.uniform(-0.5,0.5)
+        next_middle_pos[2]+=random.uniform(-0.5,0.5)
+        self.pick_and_place_primitive(cur_middle_pos,next_middle_pos)
+    
+    def move_left_right(self):
+        left_id=self.clothes.left_point
+        right_id=self.clothes.right_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_left_pos=cur_pos[left_id]
+        cur_right_pos=cur_pos[right_id]
+        next_left_pos=deepcopy(cur_left_pos)
+        next_left_pos[0]+=random.uniform(-0.5,1)
+        next_left_pos[2]+=random.uniform(-0.7,0.7)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-1,0.5)
+        next_right_pos[2]+=random.uniform(-0.7,0.7)
+        # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
+        self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
+    def move_top_bottom(self):
+        top_id=self.clothes.top_point
+        bottom_id=self.clothes.bottom_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        cur_top_pos=cur_pos[top_id]
+        cur_bottom_pos=cur_pos[bottom_id]
+        next_top_pos=deepcopy(cur_top_pos)
+        next_top_pos[0]+=random.uniform(-0.5,0.5)
+        next_top_pos[2]+=random.uniform(-0.5,0.5)
+        # self.pick_and_place_primitive(cur_top_pos,next_top_pos)
+        cur_bottom_pos=deepcopy(cur_bottom_pos)
+        next_bottom_pos=deepcopy(cur_bottom_pos)
+        next_bottom_pos[0]+=random.uniform(-0.5,0.5)
+        next_bottom_pos[2]+=random.uniform(-0.5,0.5)
+        # self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
+        self.two_pick_and_place_primitive(cur_top_pos,next_top_pos,cur_bottom_pos,next_bottom_pos)
 
 
+    def updown(self):
+        left_shoulder_id=self.clothes.left_shoulder
+        right_shoulder_id=self.clothes.right_shoulder
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        left_pos=cur_pos[left_shoulder_id]
+        right_pos=cur_pos[right_shoulder_id]
+        next_left_pos=deepcopy(left_pos)
+        next_right_pos=deepcopy(right_pos)
+        next_left_pos[1]+=1
+        next_right_pos[1]+=1
+        #next_left_pos[2]+=random.uniform(0.5,1)
+        #next_right_pos[2]+=random.uniform(0.5,1)
+        self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
+    
+    def execute_action(self,action):
+        function=action[0]
+        args=action[1]
+        if function=="two_pick_and_place_primitive":
+            self.two_pick_and_place_primitive(*args)
+        elif function=="pick_and_fling_primitive":
+            self.pick_and_fling_primitive(*args)
+            
+            
+    def vectorized_range1(self,start, end):
+        """  Return an array of NxD, iterating from the start to the end"""
+        N = int(np.max(end - start)) + 1
+        idxes = np.floor(np.arange(N) * (end - start)
+                        [:, None] / N + start[:, None]).astype('int')
+        return idxes
+
+    def vectorized_meshgrid1(self,vec_x, vec_y):
+        """vec_x in NxK, vec_y in NxD. Return xx in Nx(KxD) and yy in Nx(DxK)"""
+        N, K, D = vec_x.shape[0], vec_x.shape[1], vec_y.shape[1]
+        vec_x = np.tile(vec_x[:, None, :], [1, D, 1]).reshape(N, -1)
+        vec_y = np.tile(vec_y[:, :, None], [1, 1, K]).reshape(N, -1)
+        return vec_x, vec_y
+    
+    def get_current_covered_area(self,cloth_particle_num, cloth_particle_radius: float = 0.00625):
+        """
+        Calculate the covered area by taking max x,y cood and min x,y 
+        coord, create a discritized grid between the points
+        :param pos: Current positions of the particle states
+        """
+        pos = pyflex.get_positions()
+        pos = np.reshape(pos, [-1, 4])[:cloth_particle_num]
+        min_x = np.min(pos[:, 0])
+        min_y = np.min(pos[:, 2])
+        max_x = np.max(pos[:, 0])
+        max_y = np.max(pos[:, 2])
+        init = np.array([min_x, min_y])
+        span = np.array([max_x - min_x, max_y - min_y]) / 100.
+        pos2d = pos[:, [0, 2]]
+
+        offset = pos2d - init
+        slotted_x_low = np.maximum(np.round((offset[:, 0] - cloth_particle_radius) / span[0]).astype(int), 0)
+        slotted_x_high = np.minimum(np.round((offset[:, 0] + cloth_particle_radius) / span[0]).astype(int), 100)
+        slotted_y_low = np.maximum(np.round((offset[:, 1] - cloth_particle_radius) / span[1]).astype(int), 0)
+        slotted_y_high = np.minimum(np.round((offset[:, 1] + cloth_particle_radius) / span[1]).astype(int), 100)
+        # Method 1
+        grid = np.zeros(10000)  # Discretization
+        listx = self.vectorized_range1(slotted_x_low, slotted_x_high)
+        listy = self.vectorized_range1(slotted_y_low, slotted_y_high)
+        listxx, listyy = self.vectorized_meshgrid1(listx, listy)
+        idx = listxx * 100 + listyy
+        idx = np.clip(idx.flatten(), 0, 9999)
+        grid[idx] = 1
+        return np.sum(grid) * span[0] * span[1]
+
+
+    def compute_coverage(self):
+        print("11111111111111111111111")
+        return self.get_current_covered_area(self.num_particles, self.particle_radius)
+
+    # def compute_percent_coverage(self):
+    #     return self.compute_coverage()/self.current_task.get_config()["flatten_area"]
 
 
 if __name__=="__main__":
@@ -472,8 +626,28 @@ if __name__=="__main__":
     
     flat_pos=pyflex.get_positions().reshape(-1,4)
     
+    initial_area = env.compute_coverage()
+    print(initial_area)
+    
+    
     # middle_shoulder =flat_pos[env.clothes.right_shoulder][:3]
     # middle_shoulder[0]=(flat_pos[env.clothes.left_shoulder][0]+middle_shoulder[0])/2
     # middle_shoulder[2]+=0.15
     
-    env.pick_and_fling_primitive(flat_pos[env.clothes.bottom_left],flat_pos[env.clothes.bottom_right])
+    fling_points=[]
+    fling_points.append([flat_pos[env.clothes.left_shoulder],flat_pos[env.clothes.right_shoulder]])
+    fling_points.append([flat_pos[env.clothes.bottom_left],flat_pos[env.clothes.bottom_right]])
+    fling_points.append([flat_pos[env.clothes.top_left],flat_pos[env.clothes.top_right]])
+    
+    env.pick_and_fling_primitive(fling_points[2][0],fling_points[2][1])
+    
+    final_area =env.compute_coverage()
+    print(final_area)
+    
+    print(final_area/initial_area)
+    
+    env.pick_and_fling_primitive(fling_points[0][0],fling_points[0][1])
+    env.pick_and_fling_primitive(fling_points[1][0],fling_points[1][1])
+    env.pick_and_fling_primitive(fling_points[2][0],fling_points[2][1])
+        
+    

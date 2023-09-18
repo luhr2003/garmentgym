@@ -94,7 +94,7 @@ class camera_Config:
     
 class cloth_Config:
     def __init__(self):
-        self.scale=2
+        self.scale=1.2
         self.cloth_pos=[0.0, 0, 0.0]
         self.cloth_size_scale=2
         self.cloth_size=[-1,-1]

@@ -249,7 +249,40 @@ class BimanualHangEnv(ClothesHangEnv):
         self.two_movep([prepick_pos1, prepick_pos2], speed=1e-2)  # 修改此处
         self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
         self.two_movep([place_pos1, place_pos2], speed=1e-2)  # 修改此处
+        self.set_grasp([False, False])
+        self.two_hide_end_effectors()
+        # self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
+        # self.two_hide_end_effectors()
+    
+    def two_pick_and_place_hold(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.4,down_height=0.03):
+    # prepare primitive params
+        pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
+        pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
+
+        pick_pos1[1] += down_height
+        place_pos1[1] += 0.03 + 0.05
+        pick_pos2[1] += down_height
+        place_pos2[1] += 0.03 + 0.05
+
+        prepick_pos1 = pick_pos1.copy()
+        prepick_pos1[1] = lift_height
+        preplace_pos1 = place_pos1.copy()
+        preplace_pos1[1] = lift_height
+        prepick_pos2 = pick_pos2.copy()
+        prepick_pos2[1] = lift_height
+        preplace_pos2 = place_pos2.copy()
+        preplace_pos2[1] = lift_height
+
+        # execute action
+        self.set_grasp([False, False])
+        self.two_movep([prepick_pos1, prepick_pos2], speed=8e-2)  # 修改此处
+        self.two_movep([pick_pos1, pick_pos2], speed=8e-2)  # 修改此处
+        self.set_grasp([True, True])
+        self.two_movep([prepick_pos1, prepick_pos2], speed=1e-2)  # 修改此处
+        self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
+        self.two_movep([place_pos1, place_pos2], speed=1e-2)  # 修改此处
         # self.set_grasp([False, False])
+        # self.two_hide_end_effectors()
         # self.two_movep([preplace_pos1, preplace_pos2], speed=1e-2)  # 修改此处
         # self.two_hide_end_effectors()
         
@@ -273,7 +306,8 @@ class BimanualHangEnv(ClothesHangEnv):
         p2e=[0.54,2.6,-0.33]
         #p1e=[0.37,1.55,-0.51]
         #p2e=[0.62,1.55,-0.42]
-        self.two_pick_and_place_primitive(p1s,p1e,p2s,p2e)
+        self.set_grasp([True,True])
+        self.two_pick_and_place_hold(p1s,p1e,p2s,p2e)
         p1f=[0.64,1.8,-0.78]
         p2f=[0.89,1.8,-0.69]
         # p1f=[0.5,1.2,-0.64]
@@ -372,13 +406,13 @@ class BimanualHangEnv(ClothesHangEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.2,1)
+        next_left_pos[2]+=random.uniform(-0.4,0.4)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(-1,0.2)
+        next_right_pos[2]+=random.uniform(-0.4,0.4)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_bottom(self):
@@ -388,13 +422,13 @@ class BimanualHangEnv(ClothesHangEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,1)
+        next_left_pos[2]+=random.uniform(-1,0.5)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(-1,0.5)
+        next_right_pos[2]+=random.uniform(-1,0.5)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
@@ -416,13 +450,13 @@ class BimanualHangEnv(ClothesHangEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,1)
+        next_left_pos[2]+=random.uniform(-0.7,0.7)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(-1,0.5)
+        next_right_pos[2]+=random.uniform(-0.7,0.7)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_top_bottom(self):
@@ -458,6 +492,23 @@ class BimanualHangEnv(ClothesHangEnv):
             pyflex.render()
         
 
+    def updown(self):
+        left_shoulder_id=self.clothes.left_shoulder
+        right_shoulder_id=self.clothes.right_shoulder
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        left_pos=cur_pos[left_shoulder_id]
+        right_pos=cur_pos[right_shoulder_id]
+        next_left_pos=deepcopy(left_pos)
+        next_right_pos=deepcopy(right_pos)
+        next_left_pos[1]+=1
+        next_right_pos[1]+=1
+        #next_left_pos[2]+=random.uniform(0.5,1)
+        #next_right_pos[2]+=random.uniform(0.5,1)
+        self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
+        for j in range(50):
+            pyflex.step()
+            pyflex.render()
+        
         
 
     

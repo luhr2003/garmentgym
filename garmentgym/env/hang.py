@@ -263,13 +263,13 @@ class HangEnv(ClothesHangEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.2,1)
+        next_left_pos[2]+=random.uniform(-0.4,0.4)
         self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(-1,0.2)
+        next_right_pos[2]+=random.uniform(-0.4,0.4)
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     def move_bottom(self):
         left_id=self.clothes.bottom_left
@@ -278,13 +278,13 @@ class HangEnv(ClothesHangEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,1)
+        next_left_pos[2]+=random.uniform(-1,0.5)
         self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(-1,0.5)
+        next_right_pos[2]+=random.uniform(-1,0.5)
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     
     def move_shoulders(self):
@@ -320,14 +320,14 @@ class HangEnv(ClothesHangEnv):
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         cur_left_pos=cur_pos[left_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,1)
+        next_left_pos[2]+=random.uniform(-0.7,0.7)
         self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         cur_right_pos=cur_pos[right_id]
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(-1,0.5)
+        next_right_pos[2]+=random.uniform(-0.7,0.7)
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     def move_top_bottom(self):
         top_id=self.clothes.top_point
@@ -346,6 +346,16 @@ class HangEnv(ClothesHangEnv):
         self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
 
 
+    def updown(self):
+        left_shoulder_id=self.clothes.left_shoulder
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        left_pos=cur_pos[left_shoulder_id]
+        left_pos[0]+=0.25
+        left_pos[2]+=0.15
+        next_left_pos=deepcopy(left_pos)
+        next_left_pos[1]+=random.uniform(1,1.2)
+        next_left_pos[2]+=random.uniform(0.5,1)
+        self.pick_and_place_primitive(left_pos,next_left_pos,0.8)
         
 
     

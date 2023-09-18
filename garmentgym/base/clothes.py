@@ -31,6 +31,9 @@ class Clothes:
 
         if self.domain_randomlization:
             config.cloth_config.update({'cloth_mass':np.random.uniform(30,70),'cloth_stiff':np.random.uniform(0.2, 2.0)})
+        if 'skirt' in self.path or 'trousers' in self.path or 'dress' in self.path:
+            config.cloth_config.scale=1.2
+            config.cloth_config.cloth_size_scale=1.2
         self.mesh.set_config(config.cloth_config.cloth_pos,config.cloth_config.cloth_size_scale,config.cloth_config.cloth_mass,config.cloth_config.cloth_stiff)
 
         self.current_mesh=None
@@ -50,12 +53,20 @@ class Clothes:
 
     def get_mesh(self,mesh_category_path:str,random_choose:bool):
         assert mesh_category_path is not None
-        if random_choose:
-            self.path = str(random.choice(list(Path(mesh_category_path).rglob('*processed.obj'))))
-            self.id=int(self.path.split('/')[-2])
+        if 'skirt' in mesh_category_path or 'trousers' in mesh_category_path or 'dress' in mesh_category_path:
+            if random_choose:
+                self.path = str(random.choice(list(Path(mesh_category_path).rglob('*.obj'))))
+                self.id=int(self.path.split('/')[-2])
+            else:
+                self.path = os.path.join(mesh_category_path,str(self.id))
+                self.path=str(list(Path(self.path).rglob('*.obj'))[0])
         else:
-            self.path = os.path.join(mesh_category_path,str(self.id))
-            self.path=str(list(Path(self.path).rglob('*processed.obj'))[0])
+            if random_choose:
+                self.path = str(random.choice(list(Path(mesh_category_path).rglob('*processed.obj'))))
+                self.id=int(self.path.split('/')[-2])
+            else:
+                self.path = os.path.join(mesh_category_path,str(self.id))
+                self.path=str(list(Path(self.path).rglob('*processed.obj'))[0])
         
         return clothes_mesh(path=self.path,name=self.name,need_urs=self.need_urs)
     def flatten_cloth(self):
@@ -69,10 +80,15 @@ class Clothes:
                 pyflex.render()
         center_object()
     def init_info(self):
-        self.init_position=pyflex.get_positions().reshape(-1,4)
-        self.init_position=np.array(self.init_position).astype(np.float32)
-        self.init_position[:,:3]=self.init_position[:,:3]@get_rotation_matrix(np.array([0,1,0]),np.pi/2)
-        pyflex.set_positions(self.init_position.flatten())
+        if 'dress' in self.path or 'skirt' in self.path or 'trousers' in self.path:
+            self.init_position=pyflex.get_positions().reshape(-1,4)
+            self.init_position[:,:3]=self.init_position[:,:3]@get_rotation_matrix(np.array([0,1,0]),-np.pi)
+            pyflex.set_positions(self.init_position.flatten())
+        else:
+            self.init_position=pyflex.get_positions().reshape(-1,4)
+            self.init_position=np.array(self.init_position).astype(np.float32)
+            self.init_position[:,:3]=self.init_position[:,:3]@get_rotation_matrix(np.array([0,1,0]),np.pi/2)
+            pyflex.set_positions(self.init_position.flatten())
         xzy=self.init_position.reshape(-1, 4)[:self.mesh.num_particles, :3]
         x = xzy[:, 0]
         y = xzy[:, 2]
