@@ -130,7 +130,7 @@ class ClothesHangEnv(FlexEnv):
         pyflex.add_box(param_horiz,center_horiz,quat)
 
         hang_state=pyflex.get_shape_states()
-        print(np.array(hang_state).reshape(-1,14))
+        # print(np.array(hang_state).reshape(-1,14))
         pyflex.set_shape_states(hang_state)
     
         for j in range(10):
