@@ -42,6 +42,7 @@ from garmentgym.garmentgym.base.record import task_info
 class BimanualHangEnv(ClothesHangEnv):
     def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=-1):
         self.config=Config(task_config)
+        print("load_cloth",id)
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
         super().__init__(mesh_category_path=mesh_category_path,config=self.config,clothes=self.clothes)
@@ -493,15 +494,15 @@ class BimanualHangEnv(ClothesHangEnv):
         
 
     def updown(self):
-        left_shoulder_id=self.clothes.left_shoulder
-        right_shoulder_id=self.clothes.right_shoulder
+        left_shoulder_id=self.clothes.left_point
+        right_shoulder_id=self.clothes.right_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         left_pos=cur_pos[left_shoulder_id]
         right_pos=cur_pos[right_shoulder_id]
         next_left_pos=deepcopy(left_pos)
         next_right_pos=deepcopy(right_pos)
-        next_left_pos[1]+=1
-        next_right_pos[1]+=1
+        next_left_pos[1]+=0.1
+        next_right_pos[1]+=0.1
         #next_left_pos[2]+=random.uniform(0.5,1)
         #next_right_pos[2]+=random.uniform(0.5,1)
         self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
@@ -525,8 +526,10 @@ class BimanualHangEnv(ClothesHangEnv):
             self.pick_change_nodown(arg[0],arg[1],arg[2])
         elif function=="two_hang_trajectory":
             self.two_hang_trajectory(arg[0],arg[1])
+        else:
+            "print_error"
     
-    def wait_until_stable(self,max_steps=300,
+    def wait_until_stable(self,max_steps=30,
                       tolerance=1e-2,
                       gui=True,
                       step_sim_fn=lambda: pyflex.step()):

@@ -40,7 +40,7 @@ from garmentgym.garmentgym.base.record import task_info
 
 
 class HangEnv(ClothesHangEnv):
-    def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=-1):
+    def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=None):
         self.config=Config(task_config)
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
@@ -353,8 +353,8 @@ class HangEnv(ClothesHangEnv):
         left_pos[0]+=0.25
         left_pos[2]+=0.15
         next_left_pos=deepcopy(left_pos)
-        next_left_pos[1]+=random.uniform(1,1.2)
-        next_left_pos[2]+=random.uniform(0.5,1)
+        next_left_pos[1]+=random.uniform(1,1.5)
+        next_left_pos[2]+=random.uniform(-0.5,-0)
         self.pick_and_place_primitive(left_pos,next_left_pos,0.8)
         
 
@@ -379,7 +379,7 @@ class HangEnv(ClothesHangEnv):
         elif function=="hang_trajectory":
             self.hang_trajectory(arg[0])
     
-    def wait_until_stable(self,max_steps=300,
+    def wait_until_stable(self,max_steps=30,
                       tolerance=1e-2,
                       gui=False,
                       step_sim_fn=lambda: pyflex.step()):
@@ -392,7 +392,7 @@ class HangEnv(ClothesHangEnv):
                 pyflex.render()
         return False
     
-    def check_hang(self,height=0.0052,distance=0.6):
+    def check_hang(self,height=0.0052,distance=0.65):
         self.wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]

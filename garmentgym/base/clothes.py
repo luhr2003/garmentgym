@@ -170,8 +170,8 @@ class Clothes:
         middle_band=np.where(np.abs(self.init_position[:,2]-middle_point_pos[2])<0.1)
         self.left_x=np.min(self.init_position[middle_band,0])
         self.right_x=np.max(self.init_position[middle_band,0])
-        self.left_point=self.find_nearest_index([self.left_x,0,0])
-        self.right_point=self.find_nearest_index([self.right_x,0,0])
+        self.left_point=self.find_nearest_index([self.left_x,0,-0.3])
+        self.right_point=self.find_nearest_index([self.right_x,0,-0.3])
 
         # get top and bottom points
         x_middle_band=np.where(np.abs(self.init_position[:,0]-self.init_position[self.middle_point,0])<0.1)
