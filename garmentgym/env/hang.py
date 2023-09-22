@@ -29,7 +29,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 1,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -43,6 +43,7 @@ class HangEnv(ClothesHangEnv):
     def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=None):
         self.config=Config(task_config)
         self.id=id
+        print("singel test mesh id:{}".format(id))
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
         super().__init__(mesh_category_path=mesh_category_path,config=self.config,clothes=self.clothes)
         self.store_path=store_path
@@ -257,6 +258,7 @@ class HangEnv(ClothesHangEnv):
         raise MoveJointsException
 
     def move_sleeve(self):
+        print("move_sleeve")
         left_id=self.clothes.top_left
         right_id=self.clothes.top_right
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -272,6 +274,7 @@ class HangEnv(ClothesHangEnv):
         next_right_pos[2]+=random.uniform(-0.2,0.2)
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     def move_bottom(self):
+        print("move_bottom")
         left_id=self.clothes.bottom_left
         right_id=self.clothes.bottom_right
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -288,6 +291,7 @@ class HangEnv(ClothesHangEnv):
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     
     def move_shoulders(self):
+        print("move_shoulders")
         right_shoulder_id=self.clothes.right_shoulder
         left_shoulder_id=self.clothes.left_shoulder
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -306,6 +310,7 @@ class HangEnv(ClothesHangEnv):
 
     
     def move_middle(self):
+        print("move_middle")
         middle_id=self.clothes.middle_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         cur_middle_pos=cur_pos[middle_id]
@@ -315,6 +320,7 @@ class HangEnv(ClothesHangEnv):
         self.pick_and_place_primitive(cur_middle_pos,next_middle_pos)
     
     def move_left_right(self):
+        print("move_left_right")
         left_id=self.clothes.left_point
         right_id=self.clothes.right_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -330,6 +336,7 @@ class HangEnv(ClothesHangEnv):
         next_right_pos[2]+=random.uniform(-0.7,0.7)
         self.pick_and_place_primitive(cur_right_pos,next_right_pos)
     def move_top_bottom(self):
+        print("move_top_bottom")
         top_id=self.clothes.top_point
         bottom_id=self.clothes.bottom_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -347,6 +354,7 @@ class HangEnv(ClothesHangEnv):
 
 
     def updown(self):
+        print("updown")
         left_shoulder_id=self.clothes.left_shoulder
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         left_pos=cur_pos[left_shoulder_id]
@@ -392,7 +400,7 @@ class HangEnv(ClothesHangEnv):
                 pyflex.render()
         return False
     
-    def check_hang(self,height=0.0052,distance=0.65):
+    def check_hang(self,height=0.0052,distance=0.6):
         self.wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]

@@ -29,7 +29,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -401,6 +401,7 @@ class BimanualHangEnv(ClothesHangEnv):
         raise MoveJointsException
 
     def move_sleeve(self):
+        print("move sleeve")
         left_id=self.clothes.top_left
         right_id=self.clothes.top_right
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -417,6 +418,7 @@ class BimanualHangEnv(ClothesHangEnv):
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_bottom(self):
+        print("move bottom")
         left_id=self.clothes.bottom_left
         right_id=self.clothes.bottom_right
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -436,6 +438,7 @@ class BimanualHangEnv(ClothesHangEnv):
 
     
     def move_middle(self):
+        print("move middle")
         middle_id=self.clothes.middle_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
         cur_middle_pos=cur_pos[middle_id]
@@ -445,6 +448,7 @@ class BimanualHangEnv(ClothesHangEnv):
         self.pick_and_place_primitive(cur_middle_pos,next_middle_pos)
     
     def move_left_right(self):
+        print("move left right")
         left_id=self.clothes.left_point
         right_id=self.clothes.right_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -461,6 +465,7 @@ class BimanualHangEnv(ClothesHangEnv):
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_top_bottom(self):
+        print("move top bottom")
         top_id=self.clothes.top_point
         bottom_id=self.clothes.bottom_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -478,6 +483,7 @@ class BimanualHangEnv(ClothesHangEnv):
         self.two_pick_and_place_primitive(cur_top_pos,next_top_pos,cur_bottom_pos,next_bottom_pos)
 
     def shoudle_random(self):
+        print("random")
         cur_pos=np.array(pyflex.get_positions())[:,:3]
         left_shoulder_id=self.clothes.left_shoulder
         right_shoulder_id=self.clothes.right_shoulder
@@ -494,6 +500,7 @@ class BimanualHangEnv(ClothesHangEnv):
         
 
     def updown(self):
+        print("updown")
         left_shoulder_id=self.clothes.left_point
         right_shoulder_id=self.clothes.right_point
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
@@ -542,7 +549,7 @@ class BimanualHangEnv(ClothesHangEnv):
                 pyflex.render()
         return False
     
-    def check_hang(self,height=0.0052,distance=0.65):
+    def check_hang(self,height=0.0052,distance=0.5):
         self.wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
