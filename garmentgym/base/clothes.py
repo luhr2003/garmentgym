@@ -15,7 +15,7 @@ from garmentgym.base.clothes_mesh import clothes_mesh
 from garmentgym.utils.basic_utils import *
 
 class Clothes:
-    def __init__(self,name:str,mesh_category_path:str,config:Config,scale:int=1.2,need_urs:bool=False,gui:bool=True,random_choose:bool=True,domain_randomlization:bool=False,id:int=-1) -> None:
+    def __init__(self,name:str,mesh_category_path:str,config:Config,scale:int=1.2,need_urs:bool=False,gui:bool=True,random_choose:bool=True,domain_randomlization:bool=False,id=None) -> None:
         self.scale=scale
         self.need_urs=need_urs
         self.gui=gui
@@ -25,7 +25,7 @@ class Clothes:
         self.id=id
         self.path=None
         self.name=name
-        if id != -1:
+        if id != None:
             self.random_choose=False
         self.mesh=self.get_mesh(self.mesh_category_path,self.random_choose)
 
@@ -49,6 +49,8 @@ class Clothes:
         self.right_shoulder=-1
         self.left_shoulder=-1
         self.keypoint=None
+        self.init_cloth_mask=None
+        self.init_coverage=None
 
 
     def get_mesh(self,mesh_category_path:str,random_choose:bool):
@@ -66,6 +68,7 @@ class Clothes:
                 self.id=int(self.path.split('/')[-2])
             else:
                 self.path = os.path.join(mesh_category_path,str(self.id))
+                print(self.path)
                 self.path=str(list(Path(self.path).rglob('*processed.obj'))[0])
         
         return clothes_mesh(path=self.path,name=self.name,need_urs=self.need_urs)
@@ -96,6 +99,59 @@ class Clothes:
         self.mesh.cloth_height=float(np.max(y) - np.min(y))
         self.mesh.cloth_width=float(float(np.max(x) - np.min(x)))
         self.get_keypoint_groups(xzy)
+        rgb,depth=pyflex.render_cloth()
+        self.init_cloth_mask=self.get_cloth_mask(rgb)
+        self.init_coverage=self.get_current_covered_area(self.mesh.num_particles)
+
+    
+    def get_current_covered_area(self,cloth_particle_num, cloth_particle_radius: float = 0.00625):
+        """
+        Calculate the covered area by taking max x,y cood and min x,y 
+        coord, create a discritized grid between the points
+        :param pos: Current positions of the particle states
+        """
+        pos = pyflex.get_positions()
+        pos = np.reshape(pos, [-1, 4])[:cloth_particle_num]
+        min_x = np.min(pos[:, 0])
+        min_y = np.min(pos[:, 2])
+        max_x = np.max(pos[:, 0])
+        max_y = np.max(pos[:, 2])
+        init = np.array([min_x, min_y])
+        span = np.array([max_x - min_x, max_y - min_y]) / 100.
+        pos2d = pos[:, [0, 2]]
+
+        offset = pos2d - init
+        slotted_x_low = np.maximum(np.round((offset[:, 0] - cloth_particle_radius) / span[0]).astype(int), 0)
+        slotted_x_high = np.minimum(np.round((offset[:, 0] + cloth_particle_radius) / span[0]).astype(int), 100)
+        slotted_y_low = np.maximum(np.round((offset[:, 1] - cloth_particle_radius) / span[1]).astype(int), 0)
+        slotted_y_high = np.minimum(np.round((offset[:, 1] + cloth_particle_radius) / span[1]).astype(int), 100)
+        # Method 1
+        grid = np.zeros(10000)  # Discretization
+        listx = self.vectorized_range1(slotted_x_low, slotted_x_high)
+        listy = self.vectorized_range1(slotted_y_low, slotted_y_high)
+        listxx, listyy = self.vectorized_meshgrid1(listx, listy)
+        idx = listxx * 100 + listyy
+        idx = np.clip(idx.flatten(), 0, 9999)
+        grid[idx] = 1
+        return np.sum(grid) * span[0] * span[1]
+
+            
+    def vectorized_range1(self,start, end):
+        """  Return an array of NxD, iterating from the start to the end"""
+        N = int(np.max(end - start)) + 1
+        idxes = np.floor(np.arange(N) * (end - start)
+                        [:, None] / N + start[:, None]).astype('int')
+        return idxes
+
+    def vectorized_meshgrid1(self,vec_x, vec_y):
+        """vec_x in NxK, vec_y in NxD. Return xx in Nx(KxD) and yy in Nx(DxK)"""
+        N, K, D = vec_x.shape[0], vec_x.shape[1], vec_y.shape[1]
+        vec_x = np.tile(vec_x[:, None, :], [1, D, 1]).reshape(N, -1)
+        vec_y = np.tile(vec_y[:, :, None], [1, 1, K]).reshape(N, -1)
+        return vec_x, vec_y
+    
+    def get_cloth_mask(self, rgb):
+        return rgb.sum(axis=0) > 0
     
     def get_keypoint_groups(self,xzy : np.ndarray):
         x = xzy[:, 0]

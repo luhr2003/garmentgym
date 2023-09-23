@@ -63,6 +63,14 @@ class BimanualFoldEnv(ClothesEnv):
         
         self.grasp_states=[True,True]
         
+        self.num_particles = self.clothes.mesh.num_particles    #我瞎改的
+        self.particle_radius=0.00625
+        
+        
+        
+        
+        
+        
     def record_info(self):
         self.info.update(self.action)
         make_dir(os.path.join(self.store_path,str(self.id)))
@@ -197,7 +205,51 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_hide_end_effectors()
     
     
-    
+    def get_current_covered_area(self,cloth_particle_num, cloth_particle_radius: float = 0.00625):
+        """
+        Calculate the covered area by taking max x,y cood and min x,y 
+        coord, create a discritized grid between the points
+        :param pos: Current positions of the particle states
+        """
+        pos = pyflex.get_positions()
+        pos = np.reshape(pos, [-1, 4])[:cloth_particle_num]
+        min_x = np.min(pos[:, 0])
+        min_y = np.min(pos[:, 2])
+        max_x = np.max(pos[:, 0])
+        max_y = np.max(pos[:, 2])
+        init = np.array([min_x, min_y])
+        span = np.array([max_x - min_x, max_y - min_y]) / 100.
+        pos2d = pos[:, [0, 2]]
+
+        offset = pos2d - init
+        slotted_x_low = np.maximum(np.round((offset[:, 0] - cloth_particle_radius) / span[0]).astype(int), 0)
+        slotted_x_high = np.minimum(np.round((offset[:, 0] + cloth_particle_radius) / span[0]).astype(int), 100)
+        slotted_y_low = np.maximum(np.round((offset[:, 1] - cloth_particle_radius) / span[1]).astype(int), 0)
+        slotted_y_high = np.minimum(np.round((offset[:, 1] + cloth_particle_radius) / span[1]).astype(int), 100)
+        # Method 1
+        grid = np.zeros(10000)  # Discretization
+        listx = self.vectorized_range1(slotted_x_low, slotted_x_high)
+        listy = self.vectorized_range1(slotted_y_low, slotted_y_high)
+        listxx, listyy = self.vectorized_meshgrid1(listx, listy)
+        idx = listxx * 100 + listyy
+        idx = np.clip(idx.flatten(), 0, 9999)
+        grid[idx] = 1
+        return np.sum(grid) * span[0] * span[1]
+
+            
+    def vectorized_range1(self,start, end):
+        """  Return an array of NxD, iterating from the start to the end"""
+        N = int(np.max(end - start)) + 1
+        idxes = np.floor(np.arange(N) * (end - start)
+                        [:, None] / N + start[:, None]).astype('int')
+        return idxes
+
+    def vectorized_meshgrid1(self,vec_x, vec_y):
+        """vec_x in NxK, vec_y in NxD. Return xx in Nx(KxD) and yy in Nx(DxK)"""
+        N, K, D = vec_x.shape[0], vec_x.shape[1], vec_y.shape[1]
+        vec_x = np.tile(vec_x[:, None, :], [1, D, 1]).reshape(N, -1)
+        vec_y = np.tile(vec_y[:, :, None], [1, 1, K]).reshape(N, -1)
+        return vec_x, vec_y
     
     
     
@@ -362,11 +414,6 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_movep([prepick_pos1, preplace_pos2], speed=5e-1)  # 修改此处
         self.two_hide_end_effectors()
 
-
-
-
-
-
     
     
     
@@ -460,8 +507,76 @@ class BimanualFoldEnv(ClothesEnv):
             self.two_nodown_one_by_one(*args)
         elif function=="two_pick_change_nodown":
             self.two_pick_change_nodown(*args)
-        
-        
+            
+    def wait_until_stable(self,max_steps=300,
+                      tolerance=1e-2,
+                      gui=False,
+                      step_sim_fn=lambda: pyflex.step()):
+        for _ in range(max_steps):
+            particle_velocity = pyflex.get_velocities()
+            if np.abs(particle_velocity).max() < tolerance:
+                return True
+            step_sim_fn()
+            if gui:
+                pyflex.render()
+        return False
+    
+    
+    def compute_coverage(self):
+        return self.get_current_covered_area(self.num_particles, self.particle_radius)
+    
+    def check_success(self,type:str):
+        initial_area=self.clothes.init_coverage
+        init_mask=self.clothes.init_cloth_mask
+        if type=="funnel":
+
+            rate_boundary=0.7
+            shoulder_boundary=0.15
+            sleeve_boundary=0.2
+            rate_boundary_upper=0.25
+            
+
+
+            self.wait_until_stable()
+            
+            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+            cloth_pos=np.array(cloth_pos)
+            
+            final_area=self.compute_coverage()
+            print("final_area=",final_area)
+            
+            rate=final_area/initial_area
+            print("rate=",rate)
+
+            
+            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
+            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
+            top_left=cloth_pos[self.clothes.top_left][:3].copy()
+            top_right=cloth_pos[self.clothes.top_right][:3].copy()
+            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
+            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
+            
+            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
+            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
+            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
+            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
+            print("left_sleeve_distance=",left_sleeve_distance)
+            print("right_sleeve_distance=",right_sleeve_distance)
+            print("left_shoulder_distance=",left_shoulder_distance)
+            print("right_shoulder_distance=",right_shoulder_distance)
+
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
+            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
+                return True
+            else:
+                return False
+
+
+
+    
+    
         
         
     
