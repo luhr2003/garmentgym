@@ -465,12 +465,12 @@ class FlingEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.2,1)
+        next_left_pos[0]+=random.uniform(-0.2,0.5)
         next_left_pos[2]+=random.uniform(-0.4,0.4)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-1,0.2)
+        next_right_pos[0]+=random.uniform(-0.5,0.2)
         next_right_pos[2]+=random.uniform(-0.4,0.4)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
@@ -481,13 +481,13 @@ class FlingEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,1)
-        next_left_pos[2]+=random.uniform(-1,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,0.5)
+        next_left_pos[2]+=random.uniform(-0.5,0.5)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-1,0.5)
-        next_right_pos[2]+=random.uniform(-1,0.5)
+        next_right_pos[0]+=random.uniform(-0.5,0.5)
+        next_right_pos[2]+=random.uniform(-0.5,0.5)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
@@ -606,8 +606,25 @@ class FlingEnv(ClothesEnv):
 
 
     def compute_coverage(self):
-        print("11111111111111111111111")
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
+    
+    def updown(self):
+        print("updown")
+        left_shoulder_id=self.clothes.left_point
+        right_shoulder_id=self.clothes.right_point
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        left_pos=cur_pos[left_shoulder_id]
+        right_pos=cur_pos[right_shoulder_id]
+        next_left_pos=deepcopy(left_pos)
+        next_right_pos=deepcopy(right_pos)
+        next_left_pos[1]+=0.1
+        next_right_pos[1]+=0.1
+        #next_left_pos[2]+=random.uniform(0.5,1)
+        #next_right_pos[2]+=random.uniform(0.5,1)
+        self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,1)
+        for j in range(50):
+            pyflex.step()
+            pyflex.render()
 
     # def compute_percent_coverage(self):
     #     return self.compute_coverage()/self.current_task.get_config()["flatten_area"]
