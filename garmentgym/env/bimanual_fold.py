@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -148,7 +148,7 @@ class BimanualFoldEnv(ClothesEnv):
 
 
     def two_pick_change_nodown(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -192,7 +192,7 @@ class BimanualFoldEnv(ClothesEnv):
 
 
 
-    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.03):
+    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
@@ -225,7 +225,7 @@ class BimanualFoldEnv(ClothesEnv):
     
     
     
-    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.5,down_height=0.03):
+    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1_s.copy(),p1_m.copy(), p1_e.copy()
         pick_pos2, mid_pos2,place_pos2 = p2_s.copy(),p2_m.copy(), p2_e.copy()
@@ -365,7 +365,7 @@ class BimanualFoldEnv(ClothesEnv):
         raise MoveJointsException
     
     def two_pick_change_nodown(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -404,7 +404,7 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_hide_end_effectors()
 
     def two_nodown_one_by_one(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -443,7 +443,7 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_movep([preplace_pos1,preplace_pos2], speed=1e-2)
         self.two_hide_end_effectors()
         
-    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.2,down_height=0.03):
+    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
@@ -480,7 +480,7 @@ class BimanualFoldEnv(ClothesEnv):
     
     
     
-    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.5,down_height=0.03):
+    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1_s.copy(),p1_m.copy(), p1_e.copy()
         pick_pos2, mid_pos2,place_pos2 = p2_s.copy(),p2_m.copy(), p2_e.copy()
@@ -594,8 +594,8 @@ class BimanualFoldEnv(ClothesEnv):
         if type=="funnel":
 
             rate_boundary=0.7
-            shoulder_boundary=0.15
-            sleeve_boundary=0.2
+            shoulder_boundary=0.35
+            sleeve_boundary=0.4
             rate_boundary_upper=0.25
             
 
@@ -638,9 +638,9 @@ class BimanualFoldEnv(ClothesEnv):
             
         elif type=="simple":
 
-            rate_boundary=0.5
-            shoulder_boundary=0.15
-            sleeve_boundary=0.15
+            rate_boundary=0.6
+            shoulder_boundary=0.35
+            sleeve_boundary=0.35
             rate_boundary_upper=0.25
             
 
@@ -686,9 +686,9 @@ class BimanualFoldEnv(ClothesEnv):
         elif type=="left_right":
 
             rate_boundary=0.7
-            shoulder_boundary=0.15
-            bottom_boundary=0.15
-            sleeve_boundary=0.25
+            shoulder_boundary=0.3
+            bottom_boundary=0.3
+            sleeve_boundary=0.4
             rate_boundary_upper=0.25
             
 
@@ -735,8 +735,8 @@ class BimanualFoldEnv(ClothesEnv):
         elif type=="jinteng":
 
             rate_boundary=0.5
-            shoulder_boundary=0.15
-            sleeve_boundary=0.35
+            shoulder_boundary=0.35
+            sleeve_boundary=0.5
             rate_boundary_upper=0.25
             
 

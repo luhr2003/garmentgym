@@ -42,7 +42,7 @@ from garmentgym.garmentgym.base.record import task_info
 class BimanualHangEnv(ClothesHangEnv):
     def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=-1):
         self.config=Config(task_config)
-        print("load_cloth",id)
+        print("double load_cloth",id)
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
         super().__init__(mesh_category_path=mesh_category_path,config=self.config,clothes=self.clothes)

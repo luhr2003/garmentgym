@@ -29,7 +29,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 1,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -85,7 +85,7 @@ class FoldEnv(ClothesEnv):
         
     
     def pick_and_place_primitive(
-        self, p1, p2, lift_height=0.2):
+        self, p1, p2, lift_height=0.15):
         # prepare primitive params
         pick_pos, place_pos = p1.copy(), p2.copy()
         pick_pos[1]=0.03
@@ -109,7 +109,7 @@ class FoldEnv(ClothesEnv):
         self.hide_end_effectors()
         
     def top_pick_and_place_primitive(
-        self, p1, p2, lift_height=0.3):
+        self, p1, p2, lift_height=0.15):
         # prepare primitive params
         pick_pos, place_pos = p1.copy(), p2.copy()
         pick_pos[1] += 0.06
@@ -134,7 +134,7 @@ class FoldEnv(ClothesEnv):
     
     
     def pick_and_change_route(
-        self, p1, p2,p3 ,lift_height=0.3):
+        self, p1, p2,p3 ,lift_height=0.15):
         # prepare primitive params
         pick_pos, mid_pos,place_pos = p1.copy(), p2.copy(),p3.copy()
         pick_pos[1] -= 0.04
@@ -167,7 +167,7 @@ class FoldEnv(ClothesEnv):
     
 
     def pick_change_nodown(
-        self, p1, p2,p3 ,lift_height=0.3):
+        self, p1, p2,p3 ,lift_height=0.15):
         # prepare primitive params
         pick_pos, mid_pos,place_pos = p1.copy(), p2.copy(),p3.copy()
         pick_pos[1] -= 0.04
@@ -405,8 +405,8 @@ class FoldEnv(ClothesEnv):
         if type=="funnel":
 
             rate_boundary=0.7
-            shoulder_boundary=0.25
-            sleeve_boundary=0.3
+            shoulder_boundary=0.3
+            sleeve_boundary=0.35
             rate_boundary_upper=0.25
             
 
@@ -451,8 +451,8 @@ class FoldEnv(ClothesEnv):
         elif type=="simple":
 
             rate_boundary=0.5
-            shoulder_boundary=0.25
-            sleeve_boundary=0.2
+            shoulder_boundary=0.35
+            sleeve_boundary=0.3
             rate_boundary_upper=0.25
             
 
@@ -498,9 +498,9 @@ class FoldEnv(ClothesEnv):
         elif type=="left_right":
 
             rate_boundary=0.7
-            shoulder_boundary=0.2
-            bottom_boundary=0.2
-            sleeve_boundary=0.3
+            shoulder_boundary=0.3
+            bottom_boundary=0.35
+            sleeve_boundary=0.45
             rate_boundary_upper=0.25
             
 
@@ -547,8 +547,8 @@ class FoldEnv(ClothesEnv):
         elif type=="jinteng":
 
             rate_boundary=0.5
-            shoulder_boundary=0.2
-            sleeve_boundary=0.4
+            shoulder_boundary=0.35
+            sleeve_boundary=0.5
             rate_boundary_upper=0.25
             
 
