@@ -96,13 +96,14 @@ class ClothesHangEnv(FlexEnv):
         self.clothes.update_info()
 
         random_state = np.random.RandomState(np.abs(int(np.sum(config["cloth_config"]['mesh_verts']))))
-        hsv_color = [
+        hsv_color = [ 
             random_state.uniform(0.0, 1.0),
             random_state.uniform(0.0, 1.0),
             random_state.uniform(0.6, 0.9)
         ]
 
         rgb_color = colorsys.hsv_to_rgb(*hsv_color)
+        
         pyflex.change_cloth_color(rgb_color)
         center_object()
 

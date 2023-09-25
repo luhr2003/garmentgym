@@ -75,13 +75,13 @@ class BimanualFoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.2,0.5)
-        next_left_pos[2]+=random.uniform(-0.4,0.4)
+        next_left_pos[0]+=random.uniform(0.2,0.5)
+        next_left_pos[2]+=random.uniform(0.2,0.4)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.2)
-        next_right_pos[2]+=random.uniform(-0.4,0.4)
+        next_right_pos[0]+=random.uniform(-0.5,0)
+        next_right_pos[2]+=random.uniform(-0.4,-0.1)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_bottom(self):
@@ -92,13 +92,13 @@ class BimanualFoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.5,0)
         next_left_pos[2]+=random.uniform(-0.5,0.5)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0.5)
-        next_right_pos[2]+=random.uniform(-0.5,0.5)
+        next_right_pos[0]+=random.uniform(0.2,0.5)
+        next_right_pos[2]+=random.uniform(0.2,0.5)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
@@ -776,6 +776,94 @@ class BimanualFoldEnv(ClothesEnv):
             else:
                 return False
         
+        elif type=='trousers_fold':
+            rate_boundary=0.5
+            top_boundary=0.6
+            bottom_boundary=0.3
+            updown_boundary=0.6
+            rate_boundary_upper=0.25
+            
+
+
+            self.wait_until_stable()
+            
+            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+            cloth_pos=np.array(cloth_pos)
+            
+            final_area=self.compute_coverage()
+            print("final_area=",final_area)
+            
+            rate=final_area/initial_area
+            print("rate=",rate)
+
+            
+            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
+            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
+            top_left=cloth_pos[self.clothes.top_left][:3].copy()
+            top_right=cloth_pos[self.clothes.top_right][:3].copy()
+            
+            
+            undown_distance1=np.linalg.norm(top_left-bottom_left)
+            updown_distance2=np.linalg.norm(top_right-bottom_right)
+            bottom_distance=np.linalg.norm(bottom_left-bottom_right)
+            top_distance=np.linalg.norm(top_right-top_left)
+            print("undown_distance1=",undown_distance1)
+            print("updown_distance2=",updown_distance2)
+            print("bottom_distance=",bottom_distance)
+            print("top_distance=",top_distance)
+
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and updown_distance2<updown_boundary and undown_distance1<updown_boundary \
+            and bottom_distance<bottom_boundary and top_distance<top_boundary:
+                return True
+            else:
+                return False
+            
+        elif type=='dress_fold':
+            rate_boundary=0.5
+            top_boundary=0.6
+            bottom_boundary=0.3
+            updown_boundary=0.6
+            rate_boundary_upper=0.25
+            
+
+
+            self.wait_until_stable()
+            
+            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+            cloth_pos=np.array(cloth_pos)
+            
+            final_area=self.compute_coverage()
+            print("final_area=",final_area)
+            
+            rate=final_area/initial_area
+            print("rate=",rate)
+
+            
+            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
+            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
+            top_left=cloth_pos[self.clothes.top_left][:3].copy()
+            top_right=cloth_pos[self.clothes.top_right][:3].copy()
+            
+            
+            undown_distance1=np.linalg.norm(top_left-bottom_left)
+            updown_distance2=np.linalg.norm(top_right-bottom_right)
+            bottom_distance=np.linalg.norm(bottom_left-bottom_right)
+            top_distance=np.linalg.norm(top_right-top_left)
+            print("undown_distance1=",undown_distance1)
+            print("updown_distance2=",updown_distance2)
+            print("bottom_distance=",bottom_distance)
+            print("top_distance=",top_distance)
+
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and updown_distance2<updown_boundary and undown_distance1<updown_boundary \
+            and bottom_distance<bottom_boundary and top_distance<top_boundary:
+                return True
+            else:
+                return False
+
 
     
     

@@ -29,7 +29,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': True,
+    'headless': False,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -501,18 +501,19 @@ class BimanualHangEnv(ClothesHangEnv):
 
     def updown(self):
         print("updown")
-        left_shoulder_id=self.clothes.left_point
-        right_shoulder_id=self.clothes.right_point
+        left_bottom_id=self.clothes.bottom_left
+        right_bottom_id=self.clothes.bottom_right
         cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
-        left_pos=cur_pos[left_shoulder_id]
-        right_pos=cur_pos[right_shoulder_id]
+        left_pos=cur_pos[left_bottom_id]
+        right_pos=cur_pos[right_bottom_id]
         next_left_pos=deepcopy(left_pos)
         next_right_pos=deepcopy(right_pos)
-        next_left_pos[1]+=0.1
-        next_right_pos[1]+=0.1
-        #next_left_pos[2]+=random.uniform(0.5,1)
-        #next_right_pos[2]+=random.uniform(0.5,1)
+        next_left_pos[1]+=0.5
+        next_right_pos[1]+=0.5
+        next_left_pos[2]-=random.uniform(0,0.4)
+        next_right_pos[2]-=random.uniform(0,0.4)
         self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
+        self.set_grasp([False,False])
         for j in range(50):
             pyflex.step()
             pyflex.render()
@@ -549,7 +550,7 @@ class BimanualHangEnv(ClothesHangEnv):
                 pyflex.render()
         return False
     
-    def check_hang(self,height=0.0052,distance=0.5):
+    def check_hang(self,height=0.0052,distance=0.7):
         self.wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
