@@ -192,7 +192,7 @@ class BimanualFoldEnv(ClothesEnv):
 
 
 
-    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.03):
+    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
