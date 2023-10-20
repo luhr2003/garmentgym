@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -75,6 +75,7 @@ class BimanualFoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
+<<<<<<< HEAD
         next_left_pos[0]+=random.uniform(0.2,0.5)
         next_left_pos[2]+=random.uniform(0.2,0.4)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
@@ -82,6 +83,15 @@ class BimanualFoldEnv(ClothesEnv):
         next_right_pos=deepcopy(cur_right_pos)
         next_right_pos[0]+=random.uniform(-0.5,0)
         next_right_pos[2]+=random.uniform(-0.4,-0.1)
+=======
+        next_left_pos[0]+=random.uniform(-0.2,0.5)
+        next_left_pos[2]+=random.uniform(-0.4,0.4)
+        # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
+        cur_right_pos=deepcopy(cur_right_pos)
+        next_right_pos=deepcopy(cur_right_pos)
+        next_right_pos[0]+=random.uniform(-0.5,0.2)
+        next_right_pos[2]+=random.uniform(-0.4,0.4)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_bottom(self):
@@ -92,13 +102,22 @@ class BimanualFoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
+<<<<<<< HEAD
         next_left_pos[0]+=random.uniform(-0.5,0)
+=======
+        next_left_pos[0]+=random.uniform(-0.5,0.5)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
         next_left_pos[2]+=random.uniform(-0.5,0.5)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
+<<<<<<< HEAD
         next_right_pos[0]+=random.uniform(0.2,0.5)
         next_right_pos[2]+=random.uniform(0.2,0.5)
+=======
+        next_right_pos[0]+=random.uniform(-0.5,0.5)
+        next_right_pos[2]+=random.uniform(-0.5,0.5)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
@@ -148,7 +167,7 @@ class BimanualFoldEnv(ClothesEnv):
 
 
     def two_pick_change_nodown(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -192,7 +211,7 @@ class BimanualFoldEnv(ClothesEnv):
 
 
 
-    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.03):
+    def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
@@ -225,7 +244,7 @@ class BimanualFoldEnv(ClothesEnv):
     
     
     
-    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.5,down_height=0.03):
+    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1_s.copy(),p1_m.copy(), p1_e.copy()
         pick_pos2, mid_pos2,place_pos2 = p2_s.copy(),p2_m.copy(), p2_e.copy()
@@ -365,7 +384,7 @@ class BimanualFoldEnv(ClothesEnv):
         raise MoveJointsException
     
     def two_pick_change_nodown(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -404,7 +423,7 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_hide_end_effectors()
 
     def two_nodown_one_by_one(
-        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.3):
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
         # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
         pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
@@ -443,7 +462,7 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_movep([preplace_pos1,preplace_pos2], speed=1e-2)
         self.two_hide_end_effectors()
         
-    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.2,down_height=0.03):
+    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
         pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
@@ -480,7 +499,7 @@ class BimanualFoldEnv(ClothesEnv):
     
     
     
-    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.5,down_height=0.03):
+    def two_pick_and_down(self, p1_s,p1_m ,p1_e, p2_s,p2_m,p2_e,lift_height=0.15,down_height=0.03):
     # prepare primitive params
         pick_pos1, mid_pos1,place_pos1 = p1_s.copy(),p1_m.copy(), p1_e.copy()
         pick_pos2, mid_pos2,place_pos2 = p2_s.copy(),p2_m.copy(), p2_e.copy()
@@ -609,8 +628,8 @@ class BimanualFoldEnv(ClothesEnv):
         if type=="funnel":
 
             rate_boundary=0.7
-            shoulder_boundary=0.15
-            sleeve_boundary=0.2
+            shoulder_boundary=0.35
+            sleeve_boundary=0.4
             rate_boundary_upper=0.25
             
 
@@ -698,6 +717,7 @@ class BimanualFoldEnv(ClothesEnv):
                 return False
         
         
+<<<<<<< HEAD
         elif type=="leftright":
 
             rate_boundary=0.7
@@ -705,6 +725,15 @@ class BimanualFoldEnv(ClothesEnv):
             bottom_boundary=0.15
             #sleeve_boundary=0.2
             rate_boundary_upper=0.35
+=======
+        elif type=="left_right":
+
+            rate_boundary=0.7
+            shoulder_boundary=0.3
+            bottom_boundary=0.3
+            sleeve_boundary=0.4
+            rate_boundary_upper=0.25
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
             
 
             self.wait_until_stable()
@@ -734,9 +763,16 @@ class BimanualFoldEnv(ClothesEnv):
             print("left_sleeve_distance=",left_sleeve_distance)
             print("right_sleeve_distance=",right_sleeve_distance)
             print("bottom_distance=",bottom_distance)
+<<<<<<< HEAD
             print("shoulder_distance=",shoulder_distance)
             
             sleeve_boundary=np.linalg.norm(left_shoulder-bottom_left)
+=======
+            # print("shoulder_distance=",shoulder_distance)
+            
+            sleeve_boundary=np.linalg.norm(left_shoulder-bottom_left)
+            print("sleeve_boundary",sleeve_boundary)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
 
             if rate>rate_boundary_upper and rate<rate_boundary \
             and shoulder_distance<shoulder_boundary and bottom_distance<bottom_boundary \
@@ -749,6 +785,7 @@ class BimanualFoldEnv(ClothesEnv):
         elif type=="jinteng":
 
             rate_boundary=0.5
+<<<<<<< HEAD
             shoulder_boundary=0.3
             sleeve_boundary=0.35
             rate_boundary_upper=0.25
@@ -796,6 +833,10 @@ class BimanualFoldEnv(ClothesEnv):
             top_boundary=0.6
             bottom_boundary=0.3
             updown_boundary=0.6
+=======
+            shoulder_boundary=0.35
+            sleeve_boundary=0.5
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
             rate_boundary_upper=0.25
             
 
@@ -811,6 +852,7 @@ class BimanualFoldEnv(ClothesEnv):
             
             rate=final_area/initial_area
             print("rate=",rate)
+<<<<<<< HEAD
 
             
             bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
@@ -856,11 +898,15 @@ class BimanualFoldEnv(ClothesEnv):
             rate=final_area/initial_area
             print("rate=",rate)
 
+=======
+
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
             
             bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
             bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
             top_left=cloth_pos[self.clothes.top_left][:3].copy()
             top_right=cloth_pos[self.clothes.top_right][:3].copy()
+<<<<<<< HEAD
             
             
             undown_distance1=np.linalg.norm(top_left-bottom_left)
@@ -878,7 +924,27 @@ class BimanualFoldEnv(ClothesEnv):
                 return True
             else:
                 return False
+=======
+            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
+            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
+            
+            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
+            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
+            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
+            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
+            print("left_sleeve_distance=",left_sleeve_distance)
+            print("right_sleeve_distance=",right_sleeve_distance)
+            print("left_shoulder_distance=",left_shoulder_distance)
+            print("right_shoulder_distance=",right_shoulder_distance)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
 
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
+            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
+                return True
+            else:
+                return False
+        
 
     
     

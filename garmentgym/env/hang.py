@@ -400,7 +400,7 @@ class HangEnv(ClothesHangEnv):
                 pyflex.render()
         return False
     
-    def check_hang(self,height=0.0052,distance=0.6):
+    def check_hang(self,height=0.0052,distance=0.5):
         self.wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]

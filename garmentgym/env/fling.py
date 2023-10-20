@@ -92,8 +92,13 @@ class FlingEnv(ClothesEnv):
         self.adaptive_fling_momentum=-1
         self.particle_radius=0.00625
         
+<<<<<<< HEAD
         self.up_camera=config["camera_config"]()
         self.vertice_camera=deepcopy(config.camera_config)
+=======
+        self.up_camera=self.config["camera_config"]()
+        self.vertice_camera=deepcopy(self.config.camera_config)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
         self.vertice_camera.cam_position=[0, 3.5, 2.5]
         self.vertice_camera.cam_angle=[0,-np.pi/5,0]
         
@@ -332,10 +337,16 @@ class FlingEnv(ClothesEnv):
         #     self.movep([left_grasp_pos, right_grasp_pos], min_steps=10)
 
         PRE_FLING_HEIGHT = 1
+<<<<<<< HEAD
         temp=max(right_grasp_pos[2],left_grasp_pos[2])
         #lift up cloth
         self.fling_movep([[left_grasp_pos[0], PRE_FLING_HEIGHT, temp+0.5],\
              [right_grasp_pos[0], PRE_FLING_HEIGHT, temp+0.5]], speed=0.06)
+=======
+        #lift up cloth
+        self.fling_movep([[left_grasp_pos[0], PRE_FLING_HEIGHT, left_grasp_pos[2]+0.6],\
+             [right_grasp_pos[0], PRE_FLING_HEIGHT, right_grasp_pos[2]+0.6]], speed=0.06)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
         print("fling step1")
         # lift to prefling
         self.fling_movep([[left_grasp_pos[0], PRE_FLING_HEIGHT+0.4, left_grasp_pos[2]+0.2],\
@@ -622,7 +633,11 @@ if __name__=="__main__":
     #change mesh_category path to your own path
     #change id to demo shirt id
     config=Config()
+<<<<<<< HEAD
     env=FlingEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00105",config=config)
+=======
+    env=FlingEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
+>>>>>>> a1c0d5ee00abbed06e01a482bf92a6f9f55f4380
 
     for j in range(100):
         pyflex.step()

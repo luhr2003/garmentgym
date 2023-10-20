@@ -29,7 +29,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 1,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -85,7 +85,7 @@ class FoldEnv(ClothesEnv):
         
     
     def pick_and_place_primitive(
-        self, p1, p2, lift_height=0.2):
+        self, p1, p2, lift_height=0.15):
         # prepare primitive params
         pick_pos, place_pos = p1.copy(), p2.copy()
         pick_pos[1]=0.03
@@ -109,7 +109,7 @@ class FoldEnv(ClothesEnv):
         self.hide_end_effectors()
         
     def top_pick_and_place_primitive(
-        self, p1, p2, lift_height=0.3):
+        self, p1, p2, lift_height=0.15):
         # prepare primitive params
         pick_pos, place_pos = p1.copy(), p2.copy()
         pick_pos[1] += 0.06
@@ -134,7 +134,7 @@ class FoldEnv(ClothesEnv):
     
     
     def pick_and_change_route(
-        self, p1, p2,p3 ,lift_height=0.3):
+        self, p1, p2,p3 ,lift_height=0.15):
         # prepare primitive params
         pick_pos, mid_pos,place_pos = p1.copy(), p2.copy(),p3.copy()
         pick_pos[1] -= 0.04
@@ -167,7 +167,7 @@ class FoldEnv(ClothesEnv):
     
 
     def pick_change_nodown(
-        self, p1, p2,p3 ,lift_height=0.3):
+        self, p1, p2,p3 ,lift_height=0.15):
         # prepare primitive params
         pick_pos, mid_pos,place_pos = p1.copy(), p2.copy(),p3.copy()
         pick_pos[1] -= 0.04
@@ -405,8 +405,150 @@ class FoldEnv(ClothesEnv):
         if type=="funnel":
 
             rate_boundary=0.7
-            shoulder_boundary=0.25
+            shoulder_boundary=0.3
+            sleeve_boundary=0.35
+            rate_boundary_upper=0.25
+            
+
+
+            self.wait_until_stable()
+            
+            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+            cloth_pos=np.array(cloth_pos)
+            
+            final_area=self.compute_coverage()
+            print("final_area=",final_area)
+            
+            rate=final_area/initial_area
+            print("rate=",rate)
+
+            
+            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
+            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
+            top_left=cloth_pos[self.clothes.top_left][:3].copy()
+            top_right=cloth_pos[self.clothes.top_right][:3].copy()
+            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
+            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
+            
+            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
+            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
+            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
+            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
+            print("left_sleeve_distance=",left_sleeve_distance)
+            print("right_sleeve_distance=",right_sleeve_distance)
+            print("left_shoulder_distance=",left_shoulder_distance)
+            print("right_shoulder_distance=",right_shoulder_distance)
+
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
+            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
+                return True
+            else:
+                return False
+        
+            
+        elif type=="simple":
+
+            rate_boundary=0.5
+            shoulder_boundary=0.35
             sleeve_boundary=0.3
+            rate_boundary_upper=0.25
+            
+
+            self.wait_until_stable()
+            
+            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+            cloth_pos=np.array(cloth_pos)
+            
+            final_area=self.compute_coverage()
+            print("final_area=",final_area)
+            
+            rate=final_area/initial_area
+            print("rate=",rate)
+
+            
+            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
+            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
+            top_left=cloth_pos[self.clothes.top_left][:3].copy()
+            top_right=cloth_pos[self.clothes.top_right][:3].copy()
+            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
+            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
+            
+            left_sleeve_distance=np.linalg.norm(top_left-right_shoulder)
+            right_sleeve_distance=np.linalg.norm(top_right-left_shoulder)
+            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
+            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
+            print("left_sleeve_distance=",left_sleeve_distance)
+            print("right_sleeve_distance=",right_sleeve_distance)
+            print("left_shoulder_distance=",left_shoulder_distance)
+            print("right_shoulder_distance=",right_shoulder_distance)
+            
+            #sleeve_boundary=np.linalg.norm(top_left-top_right)
+
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
+            and left_sleeve_distance<=sleeve_boundary and right_sleeve_distance<=sleeve_boundary:
+                return True
+            else:
+                return False
+        
+        
+        elif type=="left_right":
+
+            rate_boundary=0.7
+            shoulder_boundary=0.3
+            bottom_boundary=0.35
+            sleeve_boundary=0.45
+            rate_boundary_upper=0.25
+            
+
+            self.wait_until_stable()
+            
+            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+            cloth_pos=np.array(cloth_pos)
+            
+            final_area=self.compute_coverage()
+            print("final_area=",final_area)
+            
+            rate=final_area/initial_area
+            print("rate=",rate)
+
+            
+            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
+            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
+            top_left=cloth_pos[self.clothes.top_left][:3].copy()
+            top_right=cloth_pos[self.clothes.top_right][:3].copy()
+            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
+            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
+            
+            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
+            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
+            bottom_distance=np.linalg.norm(bottom_left-bottom_right)
+            shoulder_distance=np.linalg.norm(left_shoulder-right_shoulder)
+            print("left_sleeve_distance=",left_sleeve_distance)
+            print("right_sleeve_distance=",right_sleeve_distance)
+            print("bottom_distance=",bottom_distance)
+            # print("shoulder_distance=",shoulder_distance)
+            
+            sleeve_boundary=np.linalg.norm(left_shoulder-bottom_left)
+            print("sleeve_boundary",sleeve_boundary)
+
+            if rate>rate_boundary_upper and rate<rate_boundary \
+            and shoulder_distance<shoulder_boundary and bottom_distance<bottom_boundary \
+            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
+                return True
+            else:
+                return False
+            
+        
+        elif type=="jinteng":
+
+            rate_boundary=0.5
+            shoulder_boundary=0.35
+            sleeve_boundary=0.5
             rate_boundary_upper=0.25
             
 
