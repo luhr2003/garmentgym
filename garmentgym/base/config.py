@@ -105,7 +105,7 @@ class cloth_Config:
         self.mesh_shear_edges=None
         self.mesh_bend_edges=None
         self.mesh_stretch_edges=None
-        self.cloth_mass=5
+        self.cloth_mass=7
         self.flip_mesh=0
         self.num_particles=-1
     def update(self,kwargs):

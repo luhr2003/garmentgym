@@ -54,7 +54,7 @@ def get_image(width=480, height=480):
 
 
 
-class FlingEnv(ClothesEnv):
+class FlingFoldEnv(ClothesEnv):
     def __init__(self,mesh_category_path:str,config:Config,gui=True,store_path="./",id=-1):
         self.config=Config(task_config)
         self.id=id
@@ -195,14 +195,14 @@ class FlingEnv(ClothesEnv):
 
         # execute action
         self.set_grasp([False, False])
-        self.two_movep([prepick_pos1, prepick_pos2], speed=8e-2)  # 修改此处
-        self.two_movep([pick_pos1, pick_pos2], speed=3e-2)  # 修改此处
+        self.two_movep([prepick_pos1, prepick_pos2], speed=0.8)  # 修改此处
+        self.two_movep([pick_pos1, pick_pos2], speed=0.8)  # 修改此处
         self.set_grasp([True, True])
-        self.two_movep([prepick_pos1, prepick_pos2], speed=8e-3)  # 修改此处
-        self.two_movep([preplace_pos1, preplace_pos2], speed=8e-3)  # 修改此处
-        self.two_movep([place_pos1, place_pos2], speed=8e-3)  # 修改此处
+        self.two_movep([prepick_pos1, prepick_pos2], speed=0.08)  # 修改此处
+        self.two_movep([preplace_pos1, preplace_pos2], speed=0.08)  # 修改此处
+        self.two_movep([place_pos1, place_pos2], speed=0.08)  # 修改此处
         self.set_grasp([False, False])
-        self.two_movep([preplace_pos1, preplace_pos2], speed=8e-2)  # 修改此处
+        self.two_movep([preplace_pos1, preplace_pos2], speed=0.8)  # 修改此处
         self.two_hide_end_effectors()
         
     
@@ -303,7 +303,41 @@ class FlingEnv(ClothesEnv):
                  [-dist/2, self.grasp_height*2, -x_drag]], min_steps=10)
         self.reset_end_effectors()
 
+    def two_one_by_one(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.5,down_height=0.03):
+    # prepare primitive params
+        pick_pos1, place_pos1 = p1_s.copy(), p1_e.copy()
+        pick_pos2, place_pos2 = p2_s.copy(), p2_e.copy()
+
+        pick_pos1[1] += down_height
+        place_pos1[1] += 0.03 + 0.05
+        pick_pos2[1] += down_height
+        place_pos2[1] += 0.03 + 0.05
+
+        prepick_pos1 = pick_pos1.copy()
+        prepick_pos1[1] = lift_height
+        preplace_pos1 = place_pos1.copy()
+        preplace_pos1[1] = lift_height
+        prepick_pos2 = pick_pos2.copy()
+        prepick_pos2[1] = lift_height
+        preplace_pos2 = place_pos2.copy()
+        preplace_pos2[1] = lift_height
+
+        # execute action
+        self.set_grasp([False, False])
+        self.two_movep([prepick_pos1, prepick_pos2], speed=1)  # 修改此处
+        self.two_movep([pick_pos1, pick_pos2], speed=0.8)  # 修改此处
+        self.set_grasp([True, True])
+        self.two_movep([prepick_pos1, prepick_pos2], speed=0.03)  # 修改此处
+        self.two_movep([preplace_pos1,prepick_pos2], speed=0.03)  # 修改此处
+        self.two_movep([place_pos1,prepick_pos2], speed=0.03) 
+        self.set_grasp([False,True])
+        self.two_movep([prepick_pos1,preplace_pos2], speed=0.03) 
+        self.two_movep([prepick_pos1, place_pos2], speed=0.03)  # 修改此处
+        self.set_grasp([False, False])
+        self.two_movep([prepick_pos1, preplace_pos2], speed=0.9)  # 修改此处
+        self.two_hide_end_effectors()
     
+
     
     def pick_and_fling_primitive(
             self, p2, p1):
@@ -332,8 +366,8 @@ class FlingEnv(ClothesEnv):
         #     self.movep([left_grasp_pos, right_grasp_pos], min_steps=10)
 
         PRE_FLING_HEIGHT = 1
-        temp=max(right_grasp_pos[2],left_grasp_pos[2])
         #lift up cloth
+        temp=max(right_grasp_pos[2],left_grasp_pos[2])
         self.fling_movep([[left_grasp_pos[0], PRE_FLING_HEIGHT, temp+0.5],\
              [right_grasp_pos[0], PRE_FLING_HEIGHT, temp+0.5]], speed=0.06)
         print("fling step1")
@@ -462,12 +496,12 @@ class FlingEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.2,1)
+        next_left_pos[0]+=random.uniform(-0.3,0.3)
         next_left_pos[2]+=random.uniform(-0.4,0.4)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-1,0.2)
+        next_right_pos[0]+=random.uniform(-0.3,0.3)
         next_right_pos[2]+=random.uniform(-0.4,0.4)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
@@ -478,13 +512,13 @@ class FlingEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,1)
-        next_left_pos[2]+=random.uniform(-1,0.5)
+        next_left_pos[0]+=random.uniform(-0.1,0.2)
+        next_left_pos[2]+=random.uniform(-0.1,0.1)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-1,0.5)
-        next_right_pos[2]+=random.uniform(-1,0.5)
+        next_right_pos[0]+=random.uniform(-0.1,0.2)
+        next_right_pos[2]+=random.uniform(-0.1,0.1)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
@@ -622,15 +656,18 @@ if __name__=="__main__":
     #change mesh_category path to your own path
     #change id to demo shirt id
     config=Config()
-    env=FlingEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00105",config=config)
+    env=FlingFoldEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
 
     for j in range(100):
         pyflex.step()
         pyflex.render()
         
+    print("---------------start deform----------------")
+    env.move_sleeve()
+    env.move_bottom()
     
     
-    flat_pos=pyflex.get_positions().reshape(-1,4)
+    flat_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
     
     initial_area = env.compute_coverage()
     print(initial_area)
@@ -653,5 +690,50 @@ if __name__=="__main__":
     #env.pick_and_fling_primitive(fling_points[0][0],fling_points[0][1])
     #env.pick_and_fling_primitive(fling_points[1][0],fling_points[1][1])
     #env.pick_and_fling_primitive(fling_points[2][0],fling_points[2][1])
+    
+    
+    #fold---------------------------------------
+    #env.update_camera(0)
+    flat_pos=pyflex.get_positions().reshape(-1,4)
+    left_sleeve_mid = flat_pos[env.clothes.top_left][:3]
+    #left_sleeve_mid[2]+=0.05  #下移
+    right_shoulder_mid = flat_pos[env.clothes.right_shoulder][:3]
+    right_shoulder_mid[2]+=0.15
+    #right_shoulder_mid[0]-=0.2 
+    
+    
+    right_sleeve_mid = flat_pos[env.clothes.top_right][:3]
+    #right_sleeve_mid[2]+=0.05
+    left_shoulder_mid = flat_pos[env.clothes.left_shoulder][:3]
+    left_shoulder_mid[2]+=0.15
+    #left_shoulder_mid[0]+=0.2
+    
+    
+    #env.two_pick_and_place_primitive(left_sleeve_mid,right_shoulder_mid,[0,0,1],[0,0,1])
+    #env.two_pick_and_place_primitive([0,0,1],[0,0,1],right_sleeve_mid,left_shoulder_mid)
+    env.two_one_by_one(left_sleeve_mid,right_shoulder_mid,right_sleeve_mid,left_shoulder_mid)
+    
+    
+    right_top=right_shoulder_mid.copy()
+    right_top[2]-=0.07  #上
+    # right_top[0]+=0.23 #右
+    left_top=left_shoulder_mid.copy()
+    left_top[2]-=0.07  #上
+    # left_top[0]-=0.19 #左
+    
+    env.two_pick_and_place_primitive(flat_pos[env.clothes.bottom_left][:3],left_top,flat_pos[env.clothes.bottom_right][:3],right_top)
+    
+    
+
+    
+    
+    # pcd=o3d.geometry.PointCloud()
+    # visible_points=[]
+    # curr_pos=pyflex.get_positions().reshape(-1,4)
+    # curr_vertices=curr_pos[:,:3].copy()
+    # curr_faces=pyflex.get_faces().reshape(-1,3)
+    # curr_mesh=trimesh.Trimesh(curr_vertices,curr_faces)
+    # curr_mesh.show()
+    # print(curr_vertices.shape)
         
     

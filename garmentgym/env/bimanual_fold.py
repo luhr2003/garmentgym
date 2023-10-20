@@ -585,6 +585,21 @@ class BimanualFoldEnv(ClothesEnv):
         return False
     
     
+    def updown(self):
+        left_shoulder_id=self.clothes.left_shoulder
+        right_shoulder_id=self.clothes.right_shoulder
+        cur_pos=np.array(pyflex.get_positions()).reshape(-1,4)[:,:3]
+        left_pos=cur_pos[left_shoulder_id]
+        right_pos=cur_pos[right_shoulder_id]
+        next_left_pos=deepcopy(left_pos)
+        next_right_pos=deepcopy(right_pos)
+        next_left_pos[1]+=1
+        next_right_pos[1]+=1
+        #next_left_pos[2]+=random.uniform(0.5,1)
+        #next_right_pos[2]+=random.uniform(0.5,1)
+        self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
+    
+    
     def compute_coverage(self):
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
     
