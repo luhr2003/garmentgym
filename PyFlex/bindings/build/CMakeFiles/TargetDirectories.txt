@@ -1,4 +1,0 @@
-/home/luhr/garmentgym/garmentgym/PyFlex/bindings/build/CMakeFiles/rebuild_cache.dir
-/home/luhr/garmentgym/garmentgym/PyFlex/bindings/build/CMakeFiles/edit_cache.dir
-/home/luhr/garmentgym/garmentgym/PyFlex/bindings/build/CMakeFiles/pyflex.dir
-/home/luhr/garmentgym/garmentgym/PyFlex/bindings/build/CMakeFiles/libc_compat.dir

@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblibc_compat.a  CMakeFiles/libc_compat.dir/libc_compat/libc_compat.c.o
-/usr/bin/ranlib liblibc_compat.a

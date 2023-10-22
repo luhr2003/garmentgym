@@ -11,6 +11,7 @@ from garmentgym.base.config import Config
 import numpy as np
 import open3d as o3d
 import mesh_raycast
+import cv2
 
 
 class Basic_info:
@@ -298,6 +299,7 @@ class task_info():
         self.action=action
         self.basic_info.manipulate_time=len(self.action)
         self.clothes.update_info()
+        print("update",self.cur_info.depth.max())
     
     def init(self):
         self.basic_info.manipulate_time=0

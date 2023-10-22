@@ -3,13 +3,14 @@ from copy import deepcopy
 import random
 import pyflex
 import numpy as np
-def center_object(cloth_particle_num = -1, step_sim_fn=lambda: pyflex.step()):
+def center_object():
     pos = pyflex.get_positions().reshape(-1, 4)
     mid_x = (np.max(pos[:, 0]) + np.min(pos[:, 0]))/2
     mid_y = (np.max(pos[:, 2]) + np.min(pos[:, 2]))/2
     pos[:, [0, 2]] -= np.array([mid_x, mid_y])
     pyflex.set_positions(pos.flatten())
-    step_sim_fn()
+    pyflex.step()
+    pyflex.render()
 
 def set_random_cloth_color():
     hsv_color = [

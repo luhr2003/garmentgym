@@ -100,6 +100,7 @@ class FlingFoldEnv(ClothesEnv):
         
         
     def record_info(self):
+        center_object()
         self.info.update(self.action)
         make_dir(os.path.join(self.store_path,str(self.id)))
         self.curr_store_path=os.path.join(self.store_path,str(self.id),str(len(self.action))+".pkl")
@@ -656,7 +657,7 @@ if __name__=="__main__":
     #change mesh_category path to your own path
     #change id to demo shirt id
     config=Config()
-    env=FlingFoldEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
+    env=FlingFoldEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
 
     for j in range(100):
         pyflex.step()

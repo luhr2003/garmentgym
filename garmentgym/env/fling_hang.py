@@ -25,6 +25,7 @@ from garmentgym.garmentgym.utils.flex_utils import center_object, wait_until_sta
 from multiprocessing import Pool,Process
 from garmentgym.garmentgym.utils.translate_utils import pixel_to_world, pixel_to_world_hard, world_to_pixel, world_to_pixel_hard
 from garmentgym.garmentgym.utils.basic_utils import make_dir
+from garmentgym.garmentgym.utils.flex_utils import center_object, wait_until_stable
 task_config = {"task_config": {
     'observation_mode': 'cam_rgb',
     'action_mode': 'pickerpickplace',
@@ -148,6 +149,8 @@ class FlingHangEnv(ClothesEnv):
 
     
     def record_info(self):
+        center_object()
+        self.update_camera(0)
         self.info.update(self.action)
         make_dir(os.path.join(self.store_path,str(self.id)))
         self.curr_store_path=os.path.join(self.store_path,str(self.id),str(len(self.action))+".pkl")
@@ -155,6 +158,11 @@ class FlingHangEnv(ClothesEnv):
             pickle.dump(self.info,f)
     
     def get_cur_info(self):
+        center_object()
+        self.update_camera(0)
+        for j in range(10):
+            pyflex.step()
+            pyflex.render()
         self.info.update(self.action)
         return self.info
     
@@ -627,6 +635,7 @@ class FlingHangEnv(ClothesEnv):
         #next_right_pos[2]+=random.uniform(0.5,1)
         self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
     
+
     def execute_action(self,action):
         function=action[0]
         args=action[1]
@@ -634,6 +643,8 @@ class FlingHangEnv(ClothesEnv):
             self.two_pick_and_place_primitive(*args)
         elif function=="pick_and_fling_primitive":
             self.pick_and_fling_primitive(*args)
+        elif function=="two_hang_trajectory":
+            self.two_hang_trajectory(*args)
             
             
     def vectorized_range1(self,start, end):
