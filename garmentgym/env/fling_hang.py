@@ -765,8 +765,27 @@ class FlingHangEnv(ClothesEnv):
         self.two_hide_end_effectors()
               
     def compute_coverage(self):
-        print("11111111111111111111111")
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
+
+    def check_hang(self,height=0.0052,distance=None):
+        self.wait_until_stable()
+        cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+        cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
+        cloth_pos=np.array(cloth_pos)
+        min_height=np.min(cloth_pos[:,1])
+        if min_height<=height:
+            return False
+        else:
+            if distance != None:
+                top_pos=cur_pos[self.clothes.top_point]
+                end_pos=np.array([0.8,1.7,-0.8])
+                print(np.linalg.norm(top_pos-end_pos))
+                if np.linalg.norm(top_pos-end_pos)>distance:
+                    return False
+                else:
+                    return True
+            else:
+                return True
 
 
 if __name__=="__main__":
