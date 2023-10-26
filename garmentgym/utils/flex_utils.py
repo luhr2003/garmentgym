@@ -38,8 +38,7 @@ def wait_until_stable(max_steps=300,
         if np.abs(particle_velocity).max() < tolerance:
             return True
         step_sim_fn()
-        if gui:
-            pyflex.render()
+        pyflex.render()
     return False
 
 
