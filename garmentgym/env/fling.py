@@ -44,7 +44,7 @@ from garmentgym.garmentgym.base.record import task_info
 
 
 class FlingEnv(ClothesEnv):
-    def __init__(self,mesh_category_path:str,gui=True,store_path="./",id=-1):
+    def __init__(self,mesh_category_path:str,gui=True,store_path=None,id=-1):
         self.config=Config(task_config)
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
@@ -81,13 +81,18 @@ class FlingEnv(ClothesEnv):
         self.vertice_camera=deepcopy(self.config.camera_config)
         self.vertice_camera.cam_position=[0, 3.5, 5]
         self.vertice_camera.cam_angle=[0,-np.pi/5,0]
+
+        self.record_info_id=0
         
         
         
     def record_info(self):
+        if self.store_path is None:
+            return
         self.info.update(self.action)
         make_dir(os.path.join(self.store_path,str(self.id)))
-        self.curr_store_path=os.path.join(self.store_path,str(self.id),str(len(self.action))+".pkl")
+        self.curr_store_path=os.path.join(self.store_path,str(self.id),str(self.record_info_id)+".pkl")
+        self.record_info_id+=1
         with open(self.curr_store_path,"wb") as f:
             pickle.dump(self.info,f)
     
@@ -340,7 +345,6 @@ class FlingEnv(ClothesEnv):
             pyflex.step()
             pyflex.render()
         center_object()
-    
 
     def pick_and_fling_primitive_bottom(
             self, p2, p1):
@@ -384,8 +388,8 @@ class FlingEnv(ClothesEnv):
             pyflex.render()
 
         # lift to prefling
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]+0.8],\
-             [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]+0.8]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]-0.8],\
+             [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]-0.8]], speed=0.08)
         print("fling step2")
         
         for j in range(100):
@@ -394,13 +398,13 @@ class FlingEnv(ClothesEnv):
       
         # wait_until_stable(20, tolerance=0.005)
 
-        self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT/2, left_grasp_pos[2]+1.5],\
-                [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT/2, right_grasp_pos[2]+1.5]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT/2, left_grasp_pos[2]],\
+                [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT/2, right_grasp_pos[2]]], speed=0.08)
         for j in range(50):
             pyflex.step()
             pyflex.render()
-        self.fling_movep([[left_grasp_pos[0], 0.05, left_grasp_pos[2]+2],\
-                [right_grasp_pos[0],0.05, right_grasp_pos[2]+2]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0], 0.05, left_grasp_pos[2]+0.8],\
+                [right_grasp_pos[0],0.05, right_grasp_pos[2]+0.8]], speed=0.04)
         
         for j in range(50):
             pyflex.step()
@@ -418,25 +422,6 @@ class FlingEnv(ClothesEnv):
 
         
         
-    def lift_cloth(self,
-                   grasp_dist: float,
-                   fling_height: float = 1.3,
-                   increment_step: float = 0.03,
-                   max_height=1.3,
-                   height_offset : float = 0.1):
-        while True:
-            positions = pyflex.get_positions().reshape((-1, 4))[:, :3]
-            heights = positions[:, 1][:self.num_particles]
-
-            if heights.min() > height_offset + 0.05:
-                fling_height -= increment_step
-            elif heights.min() < height_offset - 0.05:
-                fling_height += increment_step 
-
-            self.fling_movep([[grasp_dist/2, fling_height, -0.3],
-                        [-grasp_dist/2, fling_height, -0.3]], speed=1e-3)
-
-            return fling_height
         
         
     
