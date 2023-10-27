@@ -758,6 +758,9 @@ class FlingFoldEnv(ClothesEnv):
     def compute_coverage(self):
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
 
+    def throw_down(self):
+        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1])
+
 
 if __name__=="__main__":
     #change mesh_category path to your own path
