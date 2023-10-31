@@ -573,7 +573,7 @@ class BimanualHangEnv(ClothesHangEnv):
 if __name__=="__main__":  
     #change mesh_category path to your own path
     #change id to demo shirt id
-    env=BimanualHangEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044")
+    env=BimanualHangEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/val",gui=True,store_path="./",id="03321")
     env.update_camera(1)
     for j in range(100):
         pyflex.step()
