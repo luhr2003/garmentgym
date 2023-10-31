@@ -101,8 +101,7 @@ class FlingEnv(ClothesEnv):
         return self.info
     
     def throw_down(self):
-        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1],lift_height=2)
-        self.hide_end_effectors()
+        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1])
     
     
     
