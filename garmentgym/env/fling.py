@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': True,
+    'headless': False,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -293,7 +293,7 @@ class FlingEnv(ClothesEnv):
         dist = np.linalg.norm(
             np.array(left_grasp_pos) - np.array(right_grasp_pos))
         
-        APPROACH_HEIGHT = 0.6
+        APPROACH_HEIGHT = 0.55
         pre_left_grasp_pos = (left_grasp_pos[0], APPROACH_HEIGHT, left_grasp_pos[2])
         pre_right_grasp_pos = (right_grasp_pos[0], APPROACH_HEIGHT, right_grasp_pos[2])
         
@@ -305,7 +305,7 @@ class FlingEnv(ClothesEnv):
         # only grasp points on cloth
         self.grasp_states = [True, True]
 
-        PRE_FLING_HEIGHT = 1.5
+        PRE_FLING_HEIGHT = 1.4
         #lift up cloth
         self.fling_movep([[left_grasp_pos[0], PRE_FLING_HEIGHT, left_grasp_pos[2]],\
              [right_grasp_pos[0], PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.05)
@@ -339,7 +339,7 @@ class FlingEnv(ClothesEnv):
 
         self.fling_primitive(
             dist=dist,
-            fling_height=PRE_FLING_HEIGHT-0.4,
+            fling_height=PRE_FLING_HEIGHT-0.5,
             fling_speed=self.fling_speed,
             cloth_height=cloth_height,
             )

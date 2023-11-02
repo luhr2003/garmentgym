@@ -837,17 +837,10 @@ class BimanualFoldEnv(ClothesEnv):
             
         elif type=='dress_fold':
             rate_boundary=0.6
-<<<<<<< HEAD
-            top_boundary=0.6
-            bottom_boundary=0.4
-            updown_boundary=0.6
-            rate_boundary_upper=0.25
-=======
             top_boundary=0.63
             bottom_boundary=0.4
             updown_boundary=0.63
             rate_boundary_upper=0.2
->>>>>>> 34a8caf5fabe61ecba94967229dfee6644339c9e
             
 
 

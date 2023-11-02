@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': True,
+    'headless': False,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -551,7 +551,7 @@ class BimanualHangEnv(ClothesHangEnv):
                 pyflex.render()
         return False
     
-    def check_hang(self,height=0.0052,distance=0.7):
+    def check_hang(self,height=0.0052,distance=0.73):
         self.wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
