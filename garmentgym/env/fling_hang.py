@@ -31,7 +31,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -771,7 +771,7 @@ class FlingHangEnv(ClothesEnv):
     def compute_coverage(self):
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
 
-    def check_hang(self,height=0.0052,distance=None):
+    def check_hang(self,height=0.0052,distance=0.52):
         wait_until_stable()
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
@@ -782,7 +782,7 @@ class FlingHangEnv(ClothesEnv):
         else:
             if distance != None:
                 top_pos=cur_pos[self.clothes.top_point]
-                end_pos=np.array([0.8,1.7,-0.8])
+                end_pos=np.array([0.8,1.8,-0.8])
                 print(np.linalg.norm(top_pos-end_pos))
                 if np.linalg.norm(top_pos-end_pos)>distance:
                     return False
