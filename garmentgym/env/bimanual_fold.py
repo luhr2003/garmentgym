@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -75,13 +75,13 @@ class BimanualFoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(0.2,0.5)
-        next_left_pos[2]+=random.uniform(0.2,0.4)
+        next_left_pos[0]+=random.uniform(-0.2,0.2)
+        next_left_pos[2]+=random.uniform(-0.2,0.4)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(-0.5,0)
-        next_right_pos[2]+=random.uniform(-0.4,-0.1)
+        next_right_pos[0]+=random.uniform(-0.2,0.2)
+        next_right_pos[2]+=random.uniform(-0.3,0.3)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     def move_bottom(self):
@@ -92,13 +92,13 @@ class BimanualFoldEnv(ClothesEnv):
         cur_left_pos=cur_pos[left_id]
         cur_right_pos=cur_pos[right_id]
         next_left_pos=deepcopy(cur_left_pos)
-        next_left_pos[0]+=random.uniform(-0.5,0)
-        next_left_pos[2]+=random.uniform(-0.5,0.5)
+        next_left_pos[0]+=random.uniform(-0.3,0.3)
+        next_left_pos[2]+=random.uniform(-0.3,0.3)
         # self.pick_and_place_primitive(cur_left_pos,next_left_pos)
         cur_right_pos=deepcopy(cur_right_pos)
         next_right_pos=deepcopy(cur_right_pos)
-        next_right_pos[0]+=random.uniform(0.2,0.5)
-        next_right_pos[2]+=random.uniform(0.2,0.5)
+        next_right_pos[0]+=random.uniform(-0.3,0.3)
+        next_right_pos[2]+=random.uniform(-0.3,0.3)
         # self.pick_and_place_primitive(cur_right_pos,next_right_pos)
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
     
@@ -800,7 +800,7 @@ class BimanualFoldEnv(ClothesEnv):
             
 
 
-            self.wait_until_stable()
+            #self.wait_until_stable()
             
             cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
             cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
@@ -836,15 +836,15 @@ class BimanualFoldEnv(ClothesEnv):
                 return False
             
         elif type=='dress_fold':
-            rate_boundary=0.5
+            rate_boundary=0.6
             top_boundary=0.6
-            bottom_boundary=0.3
+            bottom_boundary=0.4
             updown_boundary=0.6
             rate_boundary_upper=0.25
             
 
 
-            self.wait_until_stable()
+            #self.wait_until_stable()
             
             cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
             cloth_pos=cur_pos[:self.clothes.mesh.num_particles]

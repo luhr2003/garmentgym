@@ -938,6 +938,45 @@ class FlingFoldEnv(ClothesEnv):
         # self.pick_and_place_primitive(cur_bottom_pos,next_bottom_pos)
         self.two_pick_and_place_primitive(cur_top_pos,next_top_pos,cur_bottom_pos,next_bottom_pos)
 
+    def two_nodown_one_by_one(
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
+        # prepare primitive params
+        pick_pos1, mid_pos1,place_pos1 = p1.copy(), p2.copy(),p3.copy()
+        pick_pos2, mid_pos2,place_pos2 = p4.copy(), p5.copy(),p6.copy()
+        pick_pos1[1] -= 0.04
+        place_pos1[1] += 0.03 + 0.05
+        mid_pos1[1] += 0.03 + 0.05
+        pick_pos2[1] -= 0.04
+        place_pos2[1] += 0.03 + 0.05
+        mid_pos2[1] += 0.03 + 0.05
+
+        prepick_pos1 = pick_pos1.copy()
+        prepick_pos1[1] = lift_height
+        premid_pos1 = mid_pos1.copy()
+        premid_pos1[1] = lift_height
+        preplace_pos1 = place_pos1.copy()
+        preplace_pos1[1] = lift_height
+        
+        prepick_pos2 = pick_pos2.copy()
+        prepick_pos2[1] = lift_height
+        premid_pos2 = mid_pos2.copy()
+        premid_pos2[1] = lift_height
+        preplace_pos2 = place_pos2.copy()
+        preplace_pos2[1] = lift_height
+
+        # execute action
+        self.set_grasp(False)
+        self.two_movep([prepick_pos1,prepick_pos2], speed=8e-2)
+        self.two_movep([pick_pos1,pick_pos2], speed=1e-2)
+        self.set_grasp(True)
+        self.two_movep([prepick_pos1,prepick_pos2], speed=1e-2)
+        self.two_movep([premid_pos1,prepick_pos2], speed=1e-2)
+        self.two_movep([preplace_pos1,premid_pos2], speed=1e-2)
+        self.two_movep([place_pos1,preplace_pos2], speed=1e-2)
+        self.two_movep([place_pos1,place_pos2], speed=1e-2)
+        self.set_grasp(False)
+        self.two_movep([preplace_pos1,preplace_pos2], speed=1e-2)
+        self.two_hide_end_effectors()
 
     def updown(self):
         left_shoulder_id=self.clothes.left_shoulder
@@ -960,6 +999,8 @@ class FlingFoldEnv(ClothesEnv):
             self.two_pick_and_place_primitive(*args)
         elif function=="two_one_by_one":
             self.two_one_by_one(*args)
+        elif function=="two_nodown_one_by_one":
+            self.two_nodown_one_by_one(*args)
         
             
             
