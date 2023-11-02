@@ -10,6 +10,7 @@ import tqdm
 
 curpath=os.getcwd()
 sys.path.append(curpath)
+sys.path.append(curpath+"/garmentgym")   
 
 import open3d as o3d
 from garmentgym.garmentgym.utils.init_env import init_env
@@ -29,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',

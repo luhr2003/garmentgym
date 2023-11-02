@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -792,11 +792,11 @@ class BimanualFoldEnv(ClothesEnv):
                 return False
         
         elif type=='trousers_fold':
-            rate_boundary=0.5
+            rate_boundary=0.6
             top_boundary=0.6
-            bottom_boundary=0.3
+            bottom_boundary=0.35
             updown_boundary=0.6
-            rate_boundary_upper=0.25
+            rate_boundary_upper=0.2
             
 
 
@@ -836,11 +836,11 @@ class BimanualFoldEnv(ClothesEnv):
                 return False
             
         elif type=='dress_fold':
-            rate_boundary=0.5
-            top_boundary=0.6
-            bottom_boundary=0.3
-            updown_boundary=0.6
-            rate_boundary_upper=0.25
+            rate_boundary=0.6
+            top_boundary=0.63
+            bottom_boundary=0.4
+            updown_boundary=0.63
+            rate_boundary_upper=0.2
             
 
 

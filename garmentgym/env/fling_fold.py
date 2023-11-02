@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': False,
+    'headless': True,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -108,10 +108,10 @@ class FlingFoldEnv(ClothesEnv):
         init_mask=self.clothes.init_cloth_mask
         if type=="funnel":
 
-            rate_boundary=0.7
-            shoulder_boundary=0.35
-            sleeve_boundary=0.4
-            rate_boundary_upper=0.25
+            rate_boundary=0.65
+            shoulder_boundary=0.55
+            sleeve_boundary=0.63
+            rate_boundary_upper=0.2
             
 
             
@@ -151,9 +151,9 @@ class FlingFoldEnv(ClothesEnv):
             
         elif type=="simple":
 
-            rate_boundary=0.5
-            shoulder_boundary=0.3
-            sleeve_boundary=0.5
+            rate_boundary=0.6
+            shoulder_boundary=0.35
+            sleeve_boundary=0.53
             rate_boundary_upper=0.25
             
             
@@ -196,11 +196,11 @@ class FlingFoldEnv(ClothesEnv):
         
         elif type=="left_right":
 
-            rate_boundary=0.7
-            shoulder_boundary=0.3
-            bottom_boundary=0.3
-            sleeve_boundary=0.4
-            rate_boundary_upper=0.25
+            rate_boundary=0.6
+            shoulder_boundary=0.35
+            bottom_boundary=0.4
+            sleeve_boundary=0.5
+            rate_boundary_upper=0.2
             
             
             cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
@@ -242,10 +242,10 @@ class FlingFoldEnv(ClothesEnv):
         
         elif type=="jinteng":
 
-            rate_boundary=0.5
-            shoulder_boundary=0.3
-            sleeve_boundary=0.35
-            rate_boundary_upper=0.25
+            rate_boundary=0.6 
+            shoulder_boundary=0.4
+            sleeve_boundary=0.45
+            rate_boundary_upper=0.2
             
             
             cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
@@ -324,11 +324,11 @@ class FlingFoldEnv(ClothesEnv):
                 return False
             
         elif type=='dress_fold':
-            rate_boundary=0.5
-            top_boundary=0.6
-            bottom_boundary=0.3
-            updown_boundary=0.6
-            rate_boundary_upper=0.25
+            rate_boundary=0.6
+            top_boundary=0.65
+            bottom_boundary=0.35
+            updown_boundary=0.65
+            rate_boundary_upper=0.2
             
             
             cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
@@ -363,13 +363,8 @@ class FlingFoldEnv(ClothesEnv):
                 return True
             else:
                 return False
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
-            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
-                return True
-            else:
-                return False
+        else:
+            raise Exception("wrong type")
     
     def movep(self, pos, speed=None, limit=1000, min_steps=None, eps=1e-4):
         if speed is None:
@@ -960,9 +955,50 @@ class FlingFoldEnv(ClothesEnv):
             self.two_pick_and_place_primitive(*args)
         elif function=="two_one_by_one":
             self.two_one_by_one(*args)
+        elif function=="two_nodown_one_by_one":
+            self.two_nodown_one_by_one(*args)
+            
+    
+    def two_nodown_one_by_one(
+        self, p1, p2,p3 ,p4,p5,p6,lift_height=0.15):
+        # prepare primitive params
+        pick_pos1, mid_pos1,place_pos1 = p4.copy(), p5.copy(),p6.copy()
+        pick_pos2, mid_pos2,place_pos2 = p1.copy(), p2.copy(),p3.copy()
+        pick_pos1[1] -= 0.04
+        place_pos1[1] += 0.03 + 0.05
+        mid_pos1[1] += 0.03 + 0.05
+        pick_pos2[1] -= 0.04
+        place_pos2[1] += 0.03 + 0.05
+        mid_pos2[1] += 0.03 + 0.05
+
+        prepick_pos1 = pick_pos1.copy()
+        prepick_pos1[1] = lift_height
+        premid_pos1 = mid_pos1.copy()
+        premid_pos1[1] = lift_height
+        preplace_pos1 = place_pos1.copy()
+        preplace_pos1[1] = lift_height
         
-            
-            
+        prepick_pos2 = pick_pos2.copy()
+        prepick_pos2[1] = lift_height
+        premid_pos2 = mid_pos2.copy()
+        premid_pos2[1] = lift_height
+        preplace_pos2 = place_pos2.copy()
+        preplace_pos2[1] = lift_height
+
+        # execute action
+        self.set_grasp(False)
+        self.two_movep([prepick_pos1,prepick_pos2], speed=8e-2)
+        self.two_movep([pick_pos1,pick_pos2], speed=1e-2)
+        self.set_grasp(True)
+        self.two_movep([prepick_pos1,prepick_pos2], speed=1e-2)
+        self.two_movep([premid_pos1,prepick_pos2], speed=1e-2)
+        self.two_movep([preplace_pos1,premid_pos2], speed=1e-2)
+        self.two_movep([place_pos1,preplace_pos2], speed=1e-2)
+        self.two_movep([place_pos1,place_pos2], speed=1e-2)
+        self.set_grasp(False)
+        self.two_movep([preplace_pos1,preplace_pos2], speed=1e-2)
+        self.two_hide_end_effectors()
+
     def vectorized_range1(self,start, end):
         """  Return an array of NxD, iterating from the start to the end"""
         N = int(np.max(end - start)) + 1
