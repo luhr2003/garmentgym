@@ -52,8 +52,8 @@ class task_Config:
         self.action_repeat=8
         self.render_mode='cloth'
         self.picker_radius=0.1
-        self.picker_threshold=0.005
-        self.particle_radius=0.00625
+        self.picker_threshold=3 #0.01
+        self.particle_radius=0.008
         self.picker_size=0.05
         self.speed=0.01
     def update(self,kwargs):
@@ -98,14 +98,14 @@ class cloth_Config:
         self.cloth_pos=[0.0, 0, 0.0]
         self.cloth_size_scale=2
         self.cloth_size=[-1,-1]
-        self.cloth_stiff=(1.5, 0.04, 0.04)
+        self.cloth_stiff=(1.2, 0.8, 0.06)
         self.mesh_verts=None
         self.mesh_faces=None
         self.mesh_nocs_verts=None
         self.mesh_shear_edges=None
         self.mesh_bend_edges=None
         self.mesh_stretch_edges=None
-        self.cloth_mass=7
+        self.cloth_mass=5
         self.flip_mesh=0
         self.num_particles=-1
     def update(self,kwargs):

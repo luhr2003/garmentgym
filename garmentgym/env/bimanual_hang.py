@@ -304,6 +304,7 @@ class BimanualHangEnv(ClothesHangEnv):
         self.two_hide_end_effectors()
 
     def two_hang_trajectory(self,p1s,p2s):
+        
         p1e=[0.3,2.6,-0.41]
         p2e=[0.54,2.6,-0.33]
         #p1e=[0.37,1.55,-0.51]

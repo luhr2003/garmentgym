@@ -31,8 +31,9 @@ class ClothesHangEnv(FlexEnv):
         #                                        picker_low=(-5, 0., -5), picker_high=(5, 5, 5),picker_radius=config.task_config.picker_radius,picker_size=config.task_config.picker_size)
         self.up_camera=config["camera_config"]()
         self.vertice_camera=deepcopy(config.camera_config)
-        self.vertice_camera.cam_position=[0, 3.5, 2.5]
-        self.vertice_camera.cam_angle=[0,-np.pi/5,0]
+        self.vertice_camera.cam_position=[0, 2.5,  3]    #second is height;third is y
+
+        self.vertice_camera.cam_angle=[0,-np.pi/7,0]     #5
     
     def update_camera(self,id):
         if id ==0:

@@ -44,8 +44,9 @@ from garmentgym.garmentgym.base.record import task_info
 
 
 class FlingEnv(ClothesEnv):
-    def __init__(self,mesh_category_path:str,gui=True,store_path=None,id=-1):
-        self.config=Config(task_config)
+    def __init__(self,mesh_category_path:str,config:Config,gui=True,store_path=None,id=-1):
+        #self.config=Config(task_Config)
+        self.config=Config()
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
         super().__init__(mesh_category_path=mesh_category_path,config=self.config,clothes=self.clothes)
@@ -63,7 +64,7 @@ class FlingEnv(ClothesEnv):
         self.action=[]
         self.info.add(config=self.config,clothes=self.clothes)
         self.info.init()
-        self.grasp_height=0.05
+        self.grasp_height=0.03
         self.grasp_states=[True,True]
         
         
@@ -72,17 +73,55 @@ class FlingEnv(ClothesEnv):
         self.env_mesh_vertices = []
         self.gui_step=0
         
-        self.num_particles = 100000    #我瞎改的
+        self.num_particles = 100000    
         self.fling_speed=9e-2
         self.adaptive_fling_momentum=-1
         self.particle_radius=0.00625
         
-        self.up_camera=self.config["camera_config"]()
-        self.vertice_camera=deepcopy(self.config.camera_config)
-        self.vertice_camera.cam_position=[0, 3.5, 5]
-        self.vertice_camera.cam_angle=[0,-np.pi/5,0]
+        # self.up_camera=self.config["camera_config"]()
+        # self.vertice_camera=deepcopy(self.config.camera_config)
+        # self.vertice_camera.cam_position=[0, 3.5, 5]
+        # self.vertice_camera.cam_angle=[0,-np.pi/5,0]
 
         self.record_info_id=0
+        self.up_camera=config["camera_config"]()
+        self.vertice_camera=deepcopy(config.camera_config)
+        self.vertice_camera.cam_position=[0, 2.5,  3]    #second is height;third is y
+
+        self.vertice_camera.cam_angle=[0,-np.pi/7,0]     #5
+
+        self.side_camera=deepcopy(config.camera_config)
+        self.side_camera.cam_position=[-2, 2,  0]    #second is height;third is y
+        self.side_camera.cam_angle=[-np.pi/2,-np.pi/6,np.pi/3]     #5
+
+        self.side_behind_camera=deepcopy(self.side_camera)
+        self.side_behind_camera.cam_position=[-2, 2.5,  1.5]    #second is height;third is y
+        self.side_behind_camera.cam_angle=[-np.pi/4,-np.pi/6,np.pi/3]     #5
+
+
+    
+    def update_camera(self,id):
+        if id ==0:
+            pyflex.set_camera(self.up_camera)
+            for j in range(5):
+                pyflex.step()
+                pyflex.render()
+        elif id==1:
+            pyflex.set_camera(self.vertice_camera())
+            for j in range(5):
+                pyflex.step()
+                pyflex.render()
+        elif id==2:
+            pyflex.set_camera(self.side_camera())
+            for j in range(5):
+                pyflex.step()
+                pyflex.render()
+        elif id==3:
+            pyflex.set_camera(self.side_behind_camera())
+            for j in range(5):
+                pyflex.step()
+                pyflex.render()
+
         
         
         
@@ -101,7 +140,7 @@ class FlingEnv(ClothesEnv):
         return self.info
     
     def throw_down(self):
-        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1])
+        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1],lift_height=1.5)
     
     
     
@@ -267,8 +306,8 @@ class FlingEnv(ClothesEnv):
         x_drag = x * self.adaptive_fling_momentum
       
         # lower
-        self.fling_movep([[dist/2, self.grasp_height*2+0.1, x_release-0.5],
-                    [-dist/2, self.grasp_height*2+0.1, x_release-0.5]], speed=0.05)
+        self.fling_movep([[dist/2, self.grasp_height*2, x_release-0.5],
+                    [-dist/2, self.grasp_height*2, x_release-0.5]], speed=0.05)
         for j in range(20):
             pyflex.step()
             pyflex.render()
@@ -286,8 +325,11 @@ class FlingEnv(ClothesEnv):
 
         left_grasp_pos, right_grasp_pos = p1, p2
 
-        left_grasp_pos[1] += self.grasp_height 
-        right_grasp_pos[1] += self.grasp_height
+        left_grasp_pos[1] = 0.02 
+        right_grasp_pos[1] = 0.02
+
+        # left_grasp_pos[1] = self.grasp_height 
+        # right_grasp_pos[1] = self.grasp_height
 
         # grasp distance
         dist = np.linalg.norm(
@@ -314,17 +356,22 @@ class FlingEnv(ClothesEnv):
         for j in range(50):
             pyflex.step()
             pyflex.render()
+        
+        if(left_grasp_pos[2]>right_grasp_pos[2]):
+            left_grasp_pos[2]=right_grasp_pos[2]
+        else:
+            right_grasp_pos[2]=left_grasp_pos[2]
 
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
-                [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
+        self.fling_movep([[left_grasp_pos[0]+0.1, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
+                [right_grasp_pos[0]-0.1, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
 
         for j in range(50):
             pyflex.step()
             pyflex.render()
 
         # lift to prefling
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]+0.8],\
-             [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]+0.8]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+0.1, PRE_FLING_HEIGHT, left_grasp_pos[2]+0.8],\
+             [right_grasp_pos[0]-0.1, PRE_FLING_HEIGHT, right_grasp_pos[2]+0.8]], speed=0.08)
         print("fling step2")
         
         for j in range(100):
@@ -383,16 +430,16 @@ class FlingEnv(ClothesEnv):
             pyflex.step()
             pyflex.render()
 
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
-                [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
+        self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
+                [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
 
         for j in range(50):
             pyflex.step()
             pyflex.render()
 
         # lift to prefling
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]-0.8],\
-             [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]-0.8]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT, left_grasp_pos[2]-0.8],\
+             [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT, right_grasp_pos[2]-0.8]], speed=0.08)
         print("fling step2")
         
         for j in range(100):
@@ -577,17 +624,7 @@ class FlingEnv(ClothesEnv):
         grid[idx] = 1
         return np.sum(grid) * span[0] * span[1]
 
-    def update_camera(self,id):
-        if id ==0:
-            pyflex.set_camera(self.up_camera)
-            for j in range(5):
-                pyflex.step()
-                pyflex.render()
-        else:
-            pyflex.set_camera(self.vertice_camera())
-            for j in range(5):
-                pyflex.step()
-                pyflex.render()
+   
                 
     def compute_coverage(self):
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
@@ -599,39 +636,45 @@ class FlingEnv(ClothesEnv):
 
 
 if __name__=="__main__":
-    #change mesh_category path to your own path
-    #change id to demo shirt id
-    config=Config()
-    env=FlingEnv(mesh_category_path="/home/yiyan/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
+    # #change mesh_category path to your own path
+    # #change id to demo shirt id
+    # config=Config()
+    # env=FlingEnv(mesh_category_path="/home/isaac/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
 
-    for j in range(100):
-        pyflex.step()
-        pyflex.render()
+    # for j in range(100):
+    #     pyflex.step()
+    #     pyflex.render()
         
     
     
-    flat_pos=pyflex.get_positions().reshape(-1,4)
+    # flat_pos=pyflex.get_positions().reshape(-1,4)
     
-    initial_area = env.compute_coverage()
-    print(initial_area)
+    # initial_area = env.compute_coverage()
+    # print(initial_area)
     
-    env.update_camera(2)
+    # env.update_camera(0)
     
     
-    fling_points=[]
-    fling_points.append([flat_pos[env.clothes.left_shoulder],flat_pos[env.clothes.right_shoulder]])
-    fling_points.append([flat_pos[env.clothes.bottom_left],flat_pos[env.clothes.bottom_right]])
-    fling_points.append([flat_pos[env.clothes.top_left],flat_pos[env.clothes.top_right]])
+    # fling_points=[]
+    # fling_points.append([flat_pos[env.clothes.left_shoulder],flat_pos[env.clothes.right_shoulder]])
+    # fling_points.append([flat_pos[env.clothes.bottom_left],flat_pos[env.clothes.bottom_right]])
+    # fling_points.append([flat_pos[env.clothes.top_left],flat_pos[env.clothes.top_right]])
     
-    env.pick_and_fling_primitive(fling_points[0][0],fling_points[0][1])
+    # env.pick_and_fling_primitive(fling_points[0][0],fling_points[0][1])
     
-    final_area =env.compute_coverage()
-    print(final_area)
+    # final_area =env.compute_coverage()
+    # print(final_area)
     
-    print(final_area/initial_area)
+    # print(final_area/initial_area)
     
-    #env.pick_and_fling_primitive(fling_points[0][0],fling_points[0][1])
-    #env.pick_and_fling_primitive(fling_points[1][0],fling_points[1][1])
-    #env.pick_and_fling_primitive(fling_points[2][0],fling_points[2][1])
+    # #env.pick_and_fling_primitive(fling_points[0][0],fling_points[0][1])
+    # #env.pick_and_fling_primitive(fling_points[1][0],fling_points[1][1])
+    # #env.pick_and_fling_primitive(fling_points[2][0],fling_points[2][1])
+    config=Config()
+    env=FlingEnv(mesh_category_path="/home/isaac/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00037",config=config)
+    env.update_camera(3)
+    for j in range(500):
+        pyflex.step()
+        pyflex.render()
         
     

@@ -83,8 +83,12 @@ class FlingFoldEnv(ClothesEnv):
         
         self.up_camera=config["camera_config"]()
         self.vertice_camera=deepcopy(config.camera_config)
-        self.vertice_camera.cam_position=[0, 3.5, 2.5]
-        self.vertice_camera.cam_angle=[0,-np.pi/5,0]
+        self.vertice_camera.cam_position=[-2.5, 2.5,2.5]
+        self.vertice_camera.cam_angle=[-np.pi/5,-np.pi/7,0]
+
+        #self.side_camera.cam_position=[-1, 2.5,  0.5]    #second is height;third is y
+        #self.side_camera.cam_angle=[np.pi/5,-np.pi/7,0]     #5
+
 
         self.record_info_id=0
         
