@@ -772,7 +772,7 @@ class FlingHangEnv(ClothesEnv):
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
 
     def check_hang(self,height=0.0052,distance=0.52):
-        wait_until_stable()
+        wait_until_stable(self)
         cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
         cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
         cloth_pos=np.array(cloth_pos)

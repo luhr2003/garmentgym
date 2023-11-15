@@ -1,4 +1,6 @@
 import colorsys
+import os
+import cv2
 import numpy as np
 import sys
 
@@ -13,7 +15,7 @@ from garmentgym.clothes_hyper import hyper
 from garmentgym.base.config import *
 
 class ClothesEnv(FlexEnv):
-    def __init__(self,mesh_category_path:str,config:Config,clothes:Clothes=None):
+    def __init__(self,mesh_category_path:str,config:Config,clothes:Clothes=None,store_path:str=None):
         self.config=config
         self.render_mode = config.task_config.render_mode
         self.action_mode = config.task_config.action_mode
@@ -26,8 +28,25 @@ class ClothesEnv(FlexEnv):
         self.action_tool = PickerPickPlace(num_picker=config.task_config.num_picker, particle_radius=config.task_config.particle_radius, env=self, picker_threshold=config.task_config.picker_threshold,
                                                picker_low=(-5, 0., -5), picker_high=(5, 5, 5),picker_radius=config.task_config.picker_radius,picker_size=config.task_config.picker_size)
         
-        # self.action_tool = Pickerpoint(num_picker=config.task_config.num_picker, particle_radius=config.task_config.particle_radius, env=self, picker_threshold=config.task_config.picker_threshold,
-        #                                        picker_low=(-5, 0., -5), picker_high=(5, 5, 5),picker_radius=config.task_config.picker_radius,picker_size=config.task_config.picker_size)
+        self.image_buffer=[]
+    
+
+    def step_sim_fn(self):
+        pyflex.step()
+        rgb,depth=pyflex.render()
+        rgb=np.flip(rgb.reshape([self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],4]),0)[:,:,:3].astype(np.uint8)
+        self.image_buffer.append(rgb)
+    
+    def export_image(self):
+        trajectory_store_path=os.path.join(self.store_path,"trajectory")
+        os.makedirs(trajectory_store_path,exist_ok=True)
+        video_path=os.path.join(trajectory_store_path,"video.mp4")
+        video=cv2.VideoWriter(video_path,cv2.VideoWriter_fourcc(*'mp4v'),30,(self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1]))
+        for i in range(len(self.image_buffer)):
+            rgb=self.image_buffer[i]
+            cv2.imwrite(os.path.join(trajectory_store_path,"image_%d.png"%i),rgb)
+            video.write(rgb)
+        video.release()
 
 
     def set_clothes(self,config,state=None,render_mode='cloth',step_sim_fn=lambda: pyflex.step()):
@@ -67,9 +86,7 @@ class ClothesEnv(FlexEnv):
             set_state(state)
         self.clothes.flatten_cloth()
         for j in range(300):
-            pyflex.step()
-            if config.basic_config.render:
-                pyflex.render()
+            self.step_sim_fn()
         return deepcopy(config)
     
 
@@ -115,8 +132,7 @@ class ClothesEnv(FlexEnv):
 
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         return deepcopy(config)
 

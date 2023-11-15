@@ -1,5 +1,6 @@
 import colorsys
 import os
+import cv2
 import numpy as np
 import sys
 sys.path.append(os.getcwd()+"/garmentgym")
@@ -34,18 +35,33 @@ class ClothesHangEnv(FlexEnv):
         self.vertice_camera.cam_position=[0, 2.5,  3]    #second is height;third is y
 
         self.vertice_camera.cam_angle=[0,-np.pi/7,0]     #5
+        self.image_buffer=[]
+
+    def step_sim_fn(self):
+        pyflex.step()
+        rgb,depth=pyflex.render()
+        self.image_buffer.append(rgb)
     
+    def export_image(self):
+        trajectory_store_path=os.path.join(self.store_path,"trajectory")
+        os.makedirs(trajectory_store_path,exist_ok=True)
+        video_path=os.path.join(trajectory_store_path,"video.mp4")
+        video=cv2.VideoWriter(video_path,cv2.VideoWriter_fourcc(*'mp4v'),30,(self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1]))
+        for i in range(len(self.image_buffer)):
+            rgb=self.image_buffer[i]
+            cv2.imwrite(os.path.join(trajectory_store_path,"image_%d.png"%i),rgb)
+            video.write(rgb)
+        video.release()
+
     def update_camera(self,id):
         if id ==0:
             pyflex.set_camera(self.up_camera)
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
         else:
             pyflex.set_camera(self.vertice_camera())
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
     @staticmethod
     def quatFromAxisAngle(axis, angle):
         '''
@@ -78,8 +94,7 @@ class ClothesHangEnv(FlexEnv):
 
 
         for j in range(10):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         return deepcopy(config)
     
@@ -136,8 +151,7 @@ class ClothesHangEnv(FlexEnv):
         pyflex.set_shape_states(hang_state)
     
         for j in range(10):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
 
 if __name__=="__main__":

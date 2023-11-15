@@ -6,6 +6,7 @@ import time
 import os
 
 import cv2
+import torch
 import tqdm
 
 curpath=os.getcwd()
@@ -49,16 +50,14 @@ class FlingEnv(ClothesEnv):
         self.config=Config()
         self.id=id
         self.clothes=Clothes(name="cloth"+str(id),config=self.config,mesh_category_path=mesh_category_path,id=id)
-        super().__init__(mesh_category_path=mesh_category_path,config=self.config,clothes=self.clothes)
+        super().__init__(mesh_category_path=mesh_category_path,config=self.config,clothes=self.clothes,store_path=store_path)
         self.store_path=store_path
         self.empty_scene(self.config)
         self.gui=gui
         self.gui=self.config.basic_config.gui
         center_object()
         self.action_tool.reset([0,0.1,0])
-        pyflex.step()
-        if gui:
-            pyflex.render()
+        self.step_sim_fn()
         
         self.info=task_info()
         self.action=[]
@@ -95,8 +94,8 @@ class FlingEnv(ClothesEnv):
         self.side_camera.cam_angle=[-np.pi/2,-np.pi/6,np.pi/3]     #5
 
         self.side_behind_camera=deepcopy(self.side_camera)
-        self.side_behind_camera.cam_position=[-2, 2.5,  1.5]    #second is height;third is y
-        self.side_behind_camera.cam_angle=[-np.pi/4,-np.pi/6,np.pi/3]     #5
+        self.side_behind_camera.cam_position=[-1.35, 2,  1.8]    #second is height;third is y
+        self.side_behind_camera.cam_angle=[-np.pi/4.5,-np.pi/5.5,np.pi/2.5]     #5
 
 
     
@@ -104,36 +103,40 @@ class FlingEnv(ClothesEnv):
         if id ==0:
             pyflex.set_camera(self.up_camera)
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
         elif id==1:
             pyflex.set_camera(self.vertice_camera())
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
         elif id==2:
             pyflex.set_camera(self.side_camera())
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
         elif id==3:
             pyflex.set_camera(self.side_behind_camera())
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
 
         
         
         
-    def record_info(self):
+    def record_info(self,id):
         if self.store_path is None:
             return
         self.info.update(self.action)
-        make_dir(os.path.join(self.store_path,str(self.id)))
-        self.curr_store_path=os.path.join(self.store_path,str(self.id),str(self.record_info_id)+".pkl")
-        self.record_info_id+=1
+        make_dir(os.path.join(self.store_path,"task_info"))
+        self.curr_store_path=os.path.join(self.store_path,"task_info",str(id)+".pkl")
         with open(self.curr_store_path,"wb") as f:
             pickle.dump(self.info,f)
+
+    def record_heatmap(self,id,demo_pc,deform_pc,grasp_id):
+        make_dir(os.path.join(self.store_path,"heatmap"))
+        self.curr_store_path=os.path.join(self.store_path,"heatmap",str(id)+".pt")
+        demo_pc=demo_pc.cpu()
+        deform_pc=deform_pc.cpu()
+        grasp_id=torch.tensor(grasp_id)
+        torch.save({"demo_pc":demo_pc,"deform_pc":deform_pc,"grasp_id":grasp_id},self.curr_store_path)
+        
     
     def get_cur_info(self):
         self.info.update(self.action)
@@ -164,8 +167,7 @@ class FlingEnv(ClothesEnv):
                 else:
                     delta = delta/dist
                     action.extend([*(curr+delta*speed), float(gs)])
-            if self.gui:
-                pyflex.render()
+            self.step_sim_fn()
             action=np.array(action)
             self.action_tool.step(action)
         raise MoveJointsException
@@ -273,7 +275,7 @@ class FlingEnv(ClothesEnv):
                     delta = delta/dist
                     action.extend([*(curr+delta*speed), float(gs)])
             action = np.array(action)
-            self.action_tool.step(action, step_sim_fn=self.step_simulation)
+            self.action_tool.step(action)
                 
 
         raise MoveJointsException
@@ -288,15 +290,6 @@ class FlingEnv(ClothesEnv):
             raise Exception()
     
     
-    def step_simulation(self):
-
-        if self.record_task_config:
-            self.env_end_effector_positions.append(self.action_tool._get_pos()[0])
-            self.env_mesh_vertices.append(pyflex.get_positions().reshape((-1, 4))[:self.num_particles, :3])
-
-        pyflex.step()
-        self.gui_step += 1
-    
     
     def fling_primitive(self, dist, fling_height, fling_speed, cloth_height):
     
@@ -309,8 +302,7 @@ class FlingEnv(ClothesEnv):
         self.fling_movep([[dist/2, self.grasp_height*2, x_release-0.5],
                     [-dist/2, self.grasp_height*2, x_release-0.5]], speed=0.05)
         for j in range(20):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         self.fling_movep([[dist/2, self.grasp_height, x_drag-0.6],
                     [-dist/2, self.grasp_height, x_drag-0.6]], speed=0.05)
@@ -354,8 +346,7 @@ class FlingEnv(ClothesEnv):
         print("fling step1")
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         if(left_grasp_pos[2]>right_grasp_pos[2]):
             left_grasp_pos[2]=right_grasp_pos[2]
@@ -366,8 +357,7 @@ class FlingEnv(ClothesEnv):
                 [right_grasp_pos[0]-0.1, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
         # lift to prefling
         self.fling_movep([[left_grasp_pos[0]+0.1, PRE_FLING_HEIGHT, left_grasp_pos[2]+0.8],\
@@ -375,8 +365,7 @@ class FlingEnv(ClothesEnv):
         print("fling step2")
         
         for j in range(100):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
       
         # wait_until_stable(20, tolerance=0.005)
 
@@ -390,11 +379,9 @@ class FlingEnv(ClothesEnv):
             fling_speed=self.fling_speed,
             cloth_height=cloth_height,
             )
-        
-        for j in range(50):
-            pyflex.step()
-            pyflex.render()
         center_object()
+        for j in range(50):
+            self.step_sim_fn()
 
     def pick_and_fling_primitive_bottom(
             self, p2, p1):
@@ -427,15 +414,13 @@ class FlingEnv(ClothesEnv):
         print("fling step1")
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
         self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
                 [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
         # lift to prefling
         self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT, left_grasp_pos[2]-0.8],\
@@ -443,22 +428,19 @@ class FlingEnv(ClothesEnv):
         print("fling step2")
         
         for j in range(100):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
       
         # wait_until_stable(20, tolerance=0.005)
 
         self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT/2, left_grasp_pos[2]],\
                 [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT/2, right_grasp_pos[2]]], speed=0.08)
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         self.fling_movep([[left_grasp_pos[0], 0.05, left_grasp_pos[2]+0.8],\
                 [right_grasp_pos[0],0.05, right_grasp_pos[2]+0.8]], speed=0.04)
         
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         self.set_grasp(False)
         print("release")
@@ -674,7 +656,6 @@ if __name__=="__main__":
     env=FlingEnv(mesh_category_path="/home/isaac/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00037",config=config)
     env.update_camera(3)
     for j in range(500):
-        pyflex.step()
-        pyflex.render()
+        self.step_sim_fn()
         
     
