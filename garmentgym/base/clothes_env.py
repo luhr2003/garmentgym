@@ -39,6 +39,7 @@ class ClothesEnv(FlexEnv):
     
     def export_image(self):
         trajectory_store_path=os.path.join(self.store_path,"trajectory")
+        print("export image to %s"%trajectory_store_path   )
         os.makedirs(trajectory_store_path,exist_ok=True)
         video_path=os.path.join(trajectory_store_path,"video.mp4")
         video=cv2.VideoWriter(video_path,cv2.VideoWriter_fourcc(*'mp4v'),30,(self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1]))

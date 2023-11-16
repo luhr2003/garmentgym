@@ -94,10 +94,12 @@ class FlingEnv(ClothesEnv):
         self.side_camera.cam_angle=[-np.pi/2,-np.pi/6,np.pi/3]     #5
 
         self.side_behind_camera=deepcopy(self.side_camera)
-        self.side_behind_camera.cam_position=[-1.35, 2,  1.8]    #second is height;third is y
-        self.side_behind_camera.cam_angle=[-np.pi/4.5,-np.pi/5.5,np.pi/2.5]     #5
+        self.side_behind_camera.cam_position=[-1.35, 2.6,  1.8]    #second is height;third is y
+        self.side_behind_camera.cam_angle=[-np.pi/6,-np.pi/5.5,np.pi/2]     #5
 
-
+        self.side_end_camera=deepcopy(self.side_camera)
+        self.side_end_camera.cam_position=[-2.05, 2.8,  2.4]    #second is height;third is y
+        self.side_end_camera.cam_angle=[-np.pi/5.5,-np.pi/5,np.pi/2.5]     #5
     
     def update_camera(self,id):
         if id ==0:
@@ -116,7 +118,10 @@ class FlingEnv(ClothesEnv):
             pyflex.set_camera(self.side_behind_camera())
             for j in range(5):
                 self.step_sim_fn()
-
+        elif id==4:
+            pyflex.set_camera(self.side_end_camera())
+            for j in range(5):
+                self.step_sim_fn()
         
         
         
@@ -656,6 +661,6 @@ if __name__=="__main__":
     env=FlingEnv(mesh_category_path="/home/isaac/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00037",config=config)
     env.update_camera(3)
     for j in range(500):
-        self.step_sim_fn()
+        env.step_sim_fn()
         
     
