@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import sys
 
+import torch
+
 from garmentgym.base.clothes import Clothes
 from garmentgym.utils.flex_utils import center_object,set_random_cloth_color, set_state
 import pyflex
@@ -13,6 +15,7 @@ from copy import deepcopy
 from gym.spaces import Box
 from garmentgym.clothes_hyper import hyper
 from garmentgym.base.config import *
+from garmentgym.garmentgym.base.heatmap_render import get_four_points_heatmap,get_grasp_place_heatmap,get_one_point_heatmap,get_two_grasp_heatmap,get_six_points_heatmap
 
 class ClothesEnv(FlexEnv):
     def __init__(self,mesh_category_path:str,config:Config,clothes:Clothes=None,store_path:str=None):
@@ -28,6 +31,7 @@ class ClothesEnv(FlexEnv):
         self.action_tool = PickerPickPlace(num_picker=config.task_config.num_picker, particle_radius=config.task_config.particle_radius, env=self, picker_threshold=config.task_config.picker_threshold,
                                                picker_low=(-5, 0., -5), picker_high=(5, 5, 5),picker_radius=config.task_config.picker_radius,picker_size=config.task_config.picker_size)
         
+        self.store_path=store_path
         self.image_buffer=[]
     
 
@@ -35,6 +39,7 @@ class ClothesEnv(FlexEnv):
         pyflex.step()
         rgb,depth=pyflex.render()
         rgb=np.flip(rgb.reshape([self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],4]),0)[:,:,:3].astype(np.uint8)
+        cv2.cvtColor(rgb,cv2.COLOR_RGB2BGR,rgb) 
         self.image_buffer.append(rgb)
     
     def export_image(self):
@@ -48,6 +53,21 @@ class ClothesEnv(FlexEnv):
             cv2.imwrite(os.path.join(trajectory_store_path,"image_%d.png"%i),rgb)
             video.write(rgb)
         video.release()
+
+    def get_heatmap(self,id,pc,select_points):
+        if type(pc)==torch.Tensor:
+            pc=pc.cpu().numpy()
+            pc=pc[0]
+        pc=pc[:,:3]
+        heatmap_path=os.path.join(self.store_path,"heatmap")
+        if len(select_points)==1:
+            get_one_point_heatmap(pc,pc[select_points[0]],np.zeros(512),save_path=heatmap_path,name=str(id))
+        if len(select_points)==2:
+            get_two_grasp_heatmap(pc,pc[select_points[0]],np.zeros(512),pc[select_points[1]],np.zeros(512),save_path=heatmap_path,name=str(id))
+        if len(select_points)==4:
+            get_four_points_heatmap(pc,pc[select_points[0]],np.zeros(512),pc[select_points[1]],np.zeros(512),pc[select_points[2]],np.zeros(512),pc[select_points[3]],np.zeros(512),save_path=heatmap_path,name=str(id))
+        if len(select_points)==6:
+            get_six_points_heatmap(pc,pc[select_points[0]],np.zeros(512),pc[select_points[1]],np.zeros(512),pc[select_points[2]],np.zeros(512),pc[select_points[3]],np.zeros(512),pc[select_points[4]],np.zeros(512),pc[select_points[5]],np.zeros(512),save_path=heatmap_path,name=str(id))
 
 
     def set_clothes(self,config,state=None,render_mode='cloth',step_sim_fn=lambda: pyflex.step()):

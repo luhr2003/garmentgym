@@ -273,7 +273,6 @@ class PickerPickPlace(Picker):
             total_steps += 1
             if np.alltrue(dist < self.delta_move):
                 break
-            pyflex.render()
         return total_steps
     def shape_move(self,final_points,speed=0.1):
         final_points=final_points.reshape(-1,3)

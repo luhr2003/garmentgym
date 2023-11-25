@@ -97,8 +97,12 @@ class FlingEnv(ClothesEnv):
         self.side_behind_camera.cam_position=[-1.35, 2.6,  1.8]    #second is height;third is y
         self.side_behind_camera.cam_angle=[-np.pi/6,-np.pi/5.5,np.pi/2]     #5
 
+        self.side_dress_camera=deepcopy(self.side_camera)
+        self.side_dress_camera.cam_position=[-1.65, 2.6,  1.8]    #second is height;third is y
+        self.side_dress_camera.cam_angle=[-np.pi/5.5,-np.pi/5,np.pi/2.5]     #5
+
         self.side_end_camera=deepcopy(self.side_camera)
-        self.side_end_camera.cam_position=[-2.05, 2.8,  2.4]    #second is height;third is y
+        self.side_end_camera.cam_position=[-2.05, 3,  2.4]    #second is height;third is y
         self.side_end_camera.cam_angle=[-np.pi/5.5,-np.pi/5,np.pi/2.5]     #5
     
     def update_camera(self,id):
@@ -122,7 +126,10 @@ class FlingEnv(ClothesEnv):
             pyflex.set_camera(self.side_end_camera())
             for j in range(5):
                 self.step_sim_fn()
-        
+        elif id==5:
+            pyflex.set_camera(self.side_dress_camera())
+            for j in range(5):
+                self.step_sim_fn()
         
         
     def record_info(self,id):
@@ -148,9 +155,10 @@ class FlingEnv(ClothesEnv):
         return self.info
     
     def throw_down(self):
-        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1],lift_height=1.5)
+        self.two_pick_and_place_primitive([0,0,0],[0,2,0],[2.5,2,-1],[2.5,2,-1],lift_height=1.5)
     
-    
+    # def throw_down(self):
+    #     self.two_pick_and_place_primitive([0,0,0],[0,2,0],[0.5,0.5,-1],[0.5,0.5,-1],lift_height=1.2)
     
     def movep(self, pos, speed=None, limit=1000, min_steps=None, eps=1e-4):
         if speed is None:
@@ -210,7 +218,7 @@ class FlingEnv(ClothesEnv):
         
     def two_hide_end_effectors(self):
         self.set_colors([False,False])
-        self.two_movep([[0.5, 0.5, -1],[0.5,0.5,-1]], speed=5e-2)
+        self.two_movep([[2.5, 2.5, -1],[2.5,2.5,-1]], speed=5e-2)
         
         
     def two_pick_and_place_primitive(self, p1_s, p1_e, p2_s,p2_e,lift_height=0.3,down_height=0.03):
@@ -236,7 +244,7 @@ class FlingEnv(ClothesEnv):
         self.set_grasp([False, False])
         self.two_movep([prepick_pos1, prepick_pos2], speed=8e-2)  # 修改此处
         self.two_movep([pick_pos1, pick_pos2], speed=3e-2)  # 修改此处
-        self.set_grasp([True, True])
+        self.set_grasp([True, False])
         self.two_movep([prepick_pos1, prepick_pos2], speed=2e-2)  # 修改此处
         self.two_movep([preplace_pos1, preplace_pos2], speed=2e-2)  # 修改此处
         self.two_movep([place_pos1, place_pos2], speed=2e-2)  # 修改此处
@@ -659,8 +667,13 @@ if __name__=="__main__":
     # #env.pick_and_fling_primitive(fling_points[2][0],fling_points[2][1])
     config=Config()
     env=FlingEnv(mesh_category_path="/home/isaac/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00037",config=config)
-    env.update_camera(3)
+    env.update_camera(0)
     for j in range(500):
         env.step_sim_fn()
-        
+    cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
+    cloth_pos=cur_pos[:env.clothes.mesh.num_particles]
+    cloth_pos=np.array(cloth_pos)
+    top_left=cloth_pos[env.clothes.left_shoulder][:3].copy()
+    top_right=cloth_pos[env.clothes.right_shoulder][:3].copy()
+    env.pick_and_fling_primitive_new(top_left,top_right)
     

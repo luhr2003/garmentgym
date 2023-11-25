@@ -30,7 +30,7 @@ task_config = {"task_config": {
     'action_mode': 'pickerpickplace',
     'num_picker': 2,
     'render': True,
-    'headless': True,
+    'headless': False,
     'horizon': 100,
     'action_repeat': 8,
     'render_mode': 'cloth',
@@ -133,12 +133,15 @@ class BimanualFoldEnv(ClothesEnv):
         self.two_pick_and_place_primitive(cur_left_pos,next_left_pos,cur_right_pos,next_right_pos)
         
         
-    def record_info(self):
+    def record_info(self,id):
+        if self.store_path is None:
+            return
         self.info.update(self.action)
-        make_dir(os.path.join(self.store_path,str(self.id)))
-        self.curr_store_path=os.path.join(self.store_path,str(self.id),str(len(self.action))+".pkl")
+        make_dir(os.path.join(self.store_path,"task_info"))
+        self.curr_store_path=os.path.join(self.store_path,"task_info",str(id)+".pkl")
         with open(self.curr_store_path,"wb") as f:
             pickle.dump(self.info,f)
+    
     
     def get_cur_info(self):
         self.info.update(self.action)
@@ -476,7 +479,12 @@ class BimanualFoldEnv(ClothesEnv):
         self.set_grasp([False, False])
         self.two_movep([prepick_pos1, preplace_pos2], speed=5e-1)  # 修改此处
         self.two_hide_end_effectors()
-
+        # self.set_grasp([True,True])
+        # self.two_movep([preplace_pos1,preplace_pos2], speed=1e-2) 
+        # self.two_movep([preplace_pos1, place_pos2], speed=1e-2)  # 修改此处
+        # self.set_grasp([False, False])
+        # self.two_movep([prepick_pos1, preplace_pos2], speed=5e-1)  # 修改此处
+        # self.two_hide_end_effectors()
     
     
     

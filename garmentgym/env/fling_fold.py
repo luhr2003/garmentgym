@@ -55,9 +55,7 @@ class FlingFoldEnv(ClothesEnv):
         self.gui=self.config.basic_config.gui
         center_object()
         self.action_tool.reset([0,0.1,0])
-        pyflex.step()
-        if gui:
-            pyflex.render()
+        self.step_sim_fn()
         
         self.info=task_info()
         self.action=[]
@@ -84,22 +82,39 @@ class FlingFoldEnv(ClothesEnv):
         self.up_camera=config["camera_config"]()
         self.vertice_camera=deepcopy(config.camera_config)
         self.vertice_camera.cam_position=[-2.5, 2.5,2.5]
-        self.vertice_camera.cam_angle=[-np.pi/5,-np.pi/7,0]
-
-        #self.side_camera.cam_position=[-1, 2.5,  0.5]    #second is height;third is y
-        #self.side_camera.cam_angle=[np.pi/5,-np.pi/7,0]     #5
+        self.vertice_camera.cam_angle=[-np.pi/5,-np.pi/7,0]   #5
 
 
         self.record_info_id=0
+        self.up_camera=config["camera_config"]()
+        self.vertice_camera=deepcopy(config.camera_config)
+        self.vertice_camera.cam_position=[0, 2.5,  3]    #second is height;third is y
+
+        self.vertice_camera.cam_angle=[0,-np.pi/7,0]     #5
+
+        self.side_camera=deepcopy(config.camera_config)
+        self.side_camera.cam_position=[-2, 2,  0]    #second is height;third is y
+        self.side_camera.cam_angle=[-np.pi/2,-np.pi/6,np.pi/3]     #5
+
+        self.side_behind_camera=deepcopy(self.side_camera)
+        self.side_behind_camera.cam_position=[-1.35, 2.6,  1.8]    #second is height;third is y
+        self.side_behind_camera.cam_angle=[-np.pi/6,-np.pi/5.5,np.pi/2]     #5
+
+        self.side_dress_camera=deepcopy(self.side_camera)
+        self.side_dress_camera.cam_position=[-1.65, 2.6,  1.8]    #second is height;third is y
+        self.side_dress_camera.cam_angle=[-np.pi/5.5,-np.pi/5,np.pi/2.5]     #5
+
+        self.side_end_camera=deepcopy(self.side_camera)
+        self.side_end_camera.cam_position=[-2.05, 3,  2.4]    #second is height;third is y
+        self.side_end_camera.cam_angle=[-np.pi/5.5,-np.pi/5,np.pi/2.5]     #5
         
         
-    def record_info(self):
+    def record_info(self,id):
         if self.store_path is None:
             return
-        self.record_info_id+=1
         self.info.update(self.action)
-        make_dir(os.path.join(self.store_path,str(self.id)))
-        self.curr_store_path=os.path.join(self.store_path,str(self.id),str(self.record_info_id)+".pkl")
+        make_dir(os.path.join(self.store_path,"task_info"))
+        self.curr_store_path=os.path.join(self.store_path,"task_info",str(id)+".pkl")
         with open(self.curr_store_path,"wb") as f:
             pickle.dump(self.info,f)
     
@@ -107,268 +122,7 @@ class FlingFoldEnv(ClothesEnv):
         self.info.update(self.action)
         return self.info
     
-    def check_success(self,type:str):
-        initial_area=self.clothes.init_coverage
-        init_mask=self.clothes.init_cloth_mask
-        if type=="funnel":
-
-            rate_boundary=0.65
-            shoulder_boundary=0.55
-            sleeve_boundary=0.63
-            rate_boundary_upper=0.2
-            
-
-            
-            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
-            cloth_pos=np.array(cloth_pos)
-            
-            final_area=self.compute_coverage()
-            print("final_area=",final_area)
-            
-            rate=final_area/initial_area
-            print("rate=",rate)
-
-            
-            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
-            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
-            top_left=cloth_pos[self.clothes.top_left][:3].copy()
-            top_right=cloth_pos[self.clothes.top_right][:3].copy()
-            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
-            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
-            
-            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
-            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
-            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
-            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
-            print("left_sleeve_distance=",left_sleeve_distance)
-            print("right_sleeve_distance=",right_sleeve_distance)
-            print("left_shoulder_distance=",left_shoulder_distance)
-            print("right_shoulder_distance=",right_shoulder_distance)
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
-            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
-                return True
-            else:
-                return False
-            
-        elif type=="simple":
-
-            rate_boundary=0.6
-            shoulder_boundary=0.35
-            sleeve_boundary=0.53
-            rate_boundary_upper=0.25
-            
-            
-            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
-            cloth_pos=np.array(cloth_pos)
-            
-            final_area=self.compute_coverage()
-            print("final_area=",final_area)
-            
-            rate=final_area/initial_area
-            print("rate=",rate)
-
-            
-            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
-            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
-            top_left=cloth_pos[self.clothes.top_left][:3].copy()
-            top_right=cloth_pos[self.clothes.top_right][:3].copy()
-            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
-            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
-            
-            left_sleeve_distance=np.linalg.norm(top_left-right_shoulder)
-            right_sleeve_distance=np.linalg.norm(top_right-left_shoulder)
-            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
-            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
-            print("left_sleeve_distance=",left_sleeve_distance)
-            print("right_sleeve_distance=",right_sleeve_distance)
-            print("left_shoulder_distance=",left_shoulder_distance)
-            print("right_shoulder_distance=",right_shoulder_distance)
-            
-            #sleeve_boundary=np.linalg.norm(top_left-top_right)
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
-            and left_sleeve_distance<=sleeve_boundary and right_sleeve_distance<=sleeve_boundary:
-                return True
-            else:
-                return False
-        
-        
-        elif type=="left_right":
-
-            rate_boundary=0.6
-            shoulder_boundary=0.35
-            bottom_boundary=0.4
-            sleeve_boundary=0.5
-            rate_boundary_upper=0.2
-            
-            
-            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
-            cloth_pos=np.array(cloth_pos)
-            
-            final_area=self.compute_coverage()
-            print("final_area=",final_area)
-            
-            rate=final_area/initial_area
-            print("rate=",rate)
-
-            
-            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
-            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
-            top_left=cloth_pos[self.clothes.top_left][:3].copy()
-            top_right=cloth_pos[self.clothes.top_right][:3].copy()
-            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
-            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
-            
-            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
-            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
-            bottom_distance=np.linalg.norm(bottom_left-bottom_right)
-            shoulder_distance=np.linalg.norm(left_shoulder-right_shoulder)
-            print("left_sleeve_distance=",left_sleeve_distance)
-            print("right_sleeve_distance=",right_sleeve_distance)
-            print("bottom_distance=",bottom_distance)
-            print("shoulder_distance=",shoulder_distance)
-            
-            sleeve_boundary=np.linalg.norm(left_shoulder-bottom_left)
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and shoulder_distance<shoulder_boundary and bottom_distance<bottom_boundary \
-            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
-                return True
-            else:
-                return False
-            
-        
-        elif type=="jinteng":
-
-            rate_boundary=0.6 
-            shoulder_boundary=0.4
-            sleeve_boundary=0.45
-            rate_boundary_upper=0.2
-            
-            
-            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
-            cloth_pos=np.array(cloth_pos)
-            
-            final_area=self.compute_coverage()
-            print("final_area=",final_area)
-            
-            rate=final_area/initial_area
-            print("rate=",rate)
-
-            
-            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
-            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
-            top_left=cloth_pos[self.clothes.top_left][:3].copy()
-            top_right=cloth_pos[self.clothes.top_right][:3].copy()
-            right_shoulder=cloth_pos[self.clothes.right_shoulder][:3].copy()
-            left_shoulder=cloth_pos[self.clothes.left_shoulder][:3].copy()
-            
-            left_sleeve_distance=np.linalg.norm(top_left-bottom_left)
-            right_sleeve_distance=np.linalg.norm(top_right-bottom_right)
-            left_shoulder_distance=np.linalg.norm(bottom_left-left_shoulder)
-            right_shoulder_distance=np.linalg.norm(bottom_right-right_shoulder)
-            print("left_sleeve_distance=",left_sleeve_distance)
-            print("right_sleeve_distance=",right_sleeve_distance)
-            print("left_shoulder_distance=",left_shoulder_distance)
-            print("right_shoulder_distance=",right_shoulder_distance)
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and left_shoulder_distance<shoulder_boundary and right_shoulder_distance<shoulder_boundary \
-            and left_sleeve_distance<sleeve_boundary and right_sleeve_distance<sleeve_boundary:
-                return True
-            else:
-                return False
-        
-        elif type=='trousers_fold':
-            rate_boundary=0.5
-            top_boundary=0.6
-            bottom_boundary=0.3
-            updown_boundary=0.6
-            rate_boundary_upper=0.25
-            
-            
-            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
-            cloth_pos=np.array(cloth_pos)
-            
-            final_area=self.compute_coverage()
-            print("final_area=",final_area)
-            
-            rate=final_area/initial_area
-            print("rate=",rate)
-
-            
-            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
-            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
-            top_left=cloth_pos[self.clothes.top_left][:3].copy()
-            top_right=cloth_pos[self.clothes.top_right][:3].copy()
-            
-            
-            undown_distance1=np.linalg.norm(top_left-bottom_left)
-            updown_distance2=np.linalg.norm(top_right-bottom_right)
-            bottom_distance=np.linalg.norm(bottom_left-bottom_right)
-            top_distance=np.linalg.norm(top_right-top_left)
-            print("undown_distance1=",undown_distance1)
-            print("updown_distance2=",updown_distance2)
-            print("bottom_distance=",bottom_distance)
-            print("top_distance=",top_distance)
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and updown_distance2<updown_boundary and undown_distance1<updown_boundary \
-            and bottom_distance<bottom_boundary and top_distance<top_boundary:
-                return True
-            else:
-                return False
-            
-        elif type=='dress_fold':
-            rate_boundary=0.6
-            top_boundary=0.65
-            bottom_boundary=0.35
-            updown_boundary=0.65
-            rate_boundary_upper=0.2
-            
-            
-            cur_pos=pyflex.get_positions().reshape(-1,4)[:,:3]
-            cloth_pos=cur_pos[:self.clothes.mesh.num_particles]
-            cloth_pos=np.array(cloth_pos)
-            
-            final_area=self.compute_coverage()
-            print("final_area=",final_area)
-            
-            rate=final_area/initial_area
-            print("rate=",rate)
-
-            
-            bottom_left=cloth_pos[self.clothes.bottom_left][:3].copy()
-            bottom_right=cloth_pos[self.clothes.bottom_right][:3].copy()
-            top_left=cloth_pos[self.clothes.top_left][:3].copy()
-            top_right=cloth_pos[self.clothes.top_right][:3].copy()
-            
-            
-            undown_distance1=np.linalg.norm(top_left-bottom_left)
-            updown_distance2=np.linalg.norm(top_right-bottom_right)
-            bottom_distance=np.linalg.norm(bottom_left-bottom_right)
-            top_distance=np.linalg.norm(top_right-top_left)
-            print("undown_distance1=",undown_distance1)
-            print("updown_distance2=",updown_distance2)
-            print("bottom_distance=",bottom_distance)
-            print("top_distance=",top_distance)
-
-            if rate>rate_boundary_upper and rate<rate_boundary \
-            and updown_distance2<updown_boundary and undown_distance1<updown_boundary \
-            and bottom_distance<bottom_boundary and top_distance<top_boundary:
-                return True
-            else:
-                return False
-        else:
-            raise Exception("wrong type")
+    
     
     def movep(self, pos, speed=None, limit=1000, min_steps=None, eps=1e-4):
         if speed is None:
@@ -453,15 +207,17 @@ class FlingFoldEnv(ClothesEnv):
 
         # execute action
         self.set_grasp([False, False])
-        self.two_movep([prepick_pos1, prepick_pos2], speed=0.8)  # 修改此处
-        self.two_movep([pick_pos1, pick_pos2], speed=0.8)  # 修改此处
+        self.two_movep([prepick_pos1, prepick_pos2], speed=8e-2)  # 修改此处
+        self.two_movep([pick_pos1, pick_pos2], speed=3e-2)  # 修改此处
         self.set_grasp([True, True])
         self.two_movep([prepick_pos1, prepick_pos2], speed=2e-2)  # 修改此处
         self.two_movep([preplace_pos1, preplace_pos2], speed=2e-2)  # 修改此处
         self.two_movep([place_pos1, place_pos2], speed=2e-2)  # 修改此处
         self.set_grasp([False, False])
-        self.two_movep([preplace_pos1, preplace_pos2], speed=0.8)  # 修改此处
+        self.two_movep([preplace_pos1, preplace_pos2], speed=8e-2)  # 修改此处
         self.two_hide_end_effectors()
+        
+
         
     
     def reset_end_effectors(self):
@@ -504,7 +260,7 @@ class FlingFoldEnv(ClothesEnv):
                     delta = delta/dist
                     action.extend([*(curr+delta*speed), float(gs)])
             action = np.array(action)
-            self.action_tool.step(action, step_sim_fn=pyflex.step)
+            self.action_tool.step(action)
 
                 
 
@@ -522,7 +278,7 @@ class FlingFoldEnv(ClothesEnv):
     
     
     
-    def fling_primitive(self, dist, fling_height, fling_speed, cloth_height):
+    def fling_primitive(self, dist, fling_height, fling_speed, cloth_height,var=0.1):
     
         x = cloth_height/2
 
@@ -533,8 +289,7 @@ class FlingFoldEnv(ClothesEnv):
         self.fling_movep([[dist/2, self.grasp_height*2+0.1, x_release-0.5],
                     [-dist/2, self.grasp_height*2+0.1, x_release-0.5]], speed=0.04)
         for j in range(20):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         self.fling_movep([[dist/2, self.grasp_height, x_drag-0.6],
                     [-dist/2, self.grasp_height, x_drag-0.6]], speed=0.05)
@@ -568,20 +323,38 @@ class FlingFoldEnv(ClothesEnv):
 
         # execute action
         self.set_grasp([False, False])
+        for j in range(20):
+            self.step_sim_fn()
         self.two_movep([prepick_pos1, prepick_pos2], speed=1)  # 修改此处
         self.two_movep([pick_pos1, pick_pos2], speed=0.8)  # 修改此处
+        for j in range(20):
+            self.step_sim_fn()
         self.set_grasp([True, True])
+        for j in range(20):
+            self.step_sim_fn()
         self.two_movep([prepick_pos1, prepick_pos2], speed=0.03)  # 修改此处
+        for j in range(20):
+            self.step_sim_fn()
         self.two_movep([preplace_pos1,prepick_pos2], speed=0.03)  # 修改此处
+        for j in range(20):
+            self.step_sim_fn()
         self.two_movep([place_pos1,prepick_pos2], speed=0.03) 
         self.set_grasp([False,True])
         self.two_movep([prepick_pos1,preplace_pos2], speed=0.03) 
+        for j in range(20):
+            self.step_sim_fn()
         self.two_movep([prepick_pos1, place_pos2], speed=0.03)  # 修改此处
         self.set_grasp([False, False])
+        for j in range(20):
+            self.step_sim_fn()
         self.two_movep([prepick_pos1, preplace_pos2], speed=0.9)  # 修改此处
+        for j in range(20):
+            self.step_sim_fn()
         self.two_hide_end_effectors()
+        
+
     def pick_and_fling_primitive_new(
-            self, p2, p1):
+            self, p2, p1,var=0.1):
 
         left_grasp_pos, right_grasp_pos = p1, p2
 
@@ -611,24 +384,21 @@ class FlingFoldEnv(ClothesEnv):
         print("fling step1")
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
-                [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
+        self.fling_movep([[left_grasp_pos[0]+var, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
+                [right_grasp_pos[0]-var, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
         # lift to prefling
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]+0.8],\
-             [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]+0.8]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+var, PRE_FLING_HEIGHT, left_grasp_pos[2]+0.8],\
+             [right_grasp_pos[0]-var, PRE_FLING_HEIGHT, right_grasp_pos[2]+0.8]], speed=0.08)
         print("fling step2")
         
         for j in range(100):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
       
         # wait_until_stable(20, tolerance=0.005)
 
@@ -637,15 +407,14 @@ class FlingFoldEnv(ClothesEnv):
         cloth_height = heights.max() - heights.min()
 
         self.fling_primitive(
-            dist=dist,
+            dist=dist+2*var,
             fling_height=PRE_FLING_HEIGHT-0.4,
             fling_speed=self.fling_speed,
             cloth_height=cloth_height,
             )
         
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         center_object()
 
     
@@ -687,8 +456,7 @@ class FlingFoldEnv(ClothesEnv):
         print("fling step2")
         
         for j in range(100):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
       
         # wait_until_stable(20, tolerance=0.005)
 
@@ -755,38 +523,33 @@ class FlingFoldEnv(ClothesEnv):
         print("fling step1")
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
-                [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
+        self.fling_movep([[left_grasp_pos[0]+0.1, PRE_FLING_HEIGHT, left_grasp_pos[2]],\
+                [right_grasp_pos[0]-0.1, PRE_FLING_HEIGHT, right_grasp_pos[2]]], speed=0.02)
 
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
 
         # lift to prefling
-        self.fling_movep([[left_grasp_pos[0]+0.5, PRE_FLING_HEIGHT, left_grasp_pos[2]-0.8],\
-             [right_grasp_pos[0]-0.5, PRE_FLING_HEIGHT, right_grasp_pos[2]-0.8]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+0.1, PRE_FLING_HEIGHT, left_grasp_pos[2]-0.8],\
+             [right_grasp_pos[0]-0.1, PRE_FLING_HEIGHT, right_grasp_pos[2]-0.8]], speed=0.08)
         print("fling step2")
         
         for j in range(100):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
       
         # wait_until_stable(20, tolerance=0.005)
 
-        self.fling_movep([[left_grasp_pos[0]+0.2, PRE_FLING_HEIGHT/2, left_grasp_pos[2]],\
-                [right_grasp_pos[0]-0.2, PRE_FLING_HEIGHT/2, right_grasp_pos[2]]], speed=0.08)
+        self.fling_movep([[left_grasp_pos[0]+0.1, PRE_FLING_HEIGHT/2, left_grasp_pos[2]],\
+                [right_grasp_pos[0]-0.1, PRE_FLING_HEIGHT/2, right_grasp_pos[2]]], speed=0.08)
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         self.fling_movep([[left_grasp_pos[0], 0.05, left_grasp_pos[2]+0.8],\
                 [right_grasp_pos[0],0.05, right_grasp_pos[2]+0.8]], speed=0.04)
         
         for j in range(50):
-            pyflex.step()
-            pyflex.render()
+            self.step_sim_fn()
         
         self.set_grasp(False)
         print("release")
@@ -989,6 +752,8 @@ class FlingFoldEnv(ClothesEnv):
         next_right_pos[1]+=1
         #next_left_pos[2]+=random.uniform(0.5,1)
         #next_right_pos[2]+=random.uniform(0.5,1)
+        for j in range(50):
+            self.step_sim_fn()
         self.two_pick_and_place_primitive(left_pos,next_left_pos,right_pos,next_right_pos,0.8)
     
     def execute_action(self,action):
@@ -1091,13 +856,27 @@ class FlingFoldEnv(ClothesEnv):
         if id ==0:
             pyflex.set_camera(self.up_camera)
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
-        else:
+                self.step_sim_fn()
+        elif id==1:
             pyflex.set_camera(self.vertice_camera())
             for j in range(5):
-                pyflex.step()
-                pyflex.render()
+                self.step_sim_fn()
+        elif id==2:
+            pyflex.set_camera(self.side_camera())
+            for j in range(5):
+                self.step_sim_fn()
+        elif id==3:
+            pyflex.set_camera(self.side_behind_camera())
+            for j in range(5):
+                self.step_sim_fn()
+        elif id==4:
+            pyflex.set_camera(self.side_end_camera())
+            for j in range(5):
+                self.step_sim_fn()
+        elif id==5:
+            pyflex.set_camera(self.side_dress_camera())
+            for j in range(5):
+                self.step_sim_fn()
                 
     def compute_coverage(self):
         return self.get_current_covered_area(self.num_particles, self.particle_radius)
@@ -1113,8 +892,7 @@ if __name__=="__main__":
     env=FlingFoldEnv(mesh_category_path="/home/luhr/correspondence/softgym_cloth/garmentgym/cloth3d/train",gui=True,store_path="./",id="00044",config=config)
 
     for j in range(100):
-        pyflex.step()
-        pyflex.render()
+        self.step_sim_fn()
         
     print("---------------start deform----------------")
     env.move_sleeve()

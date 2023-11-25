@@ -14,6 +14,8 @@ from copy import deepcopy
 
 from garmentgym.clothes_hyper import hyper
 from garmentgym.base.config import *
+from garmentgym.garmentgym.base.heatmap_render import get_four_points_heatmap,get_grasp_place_heatmap,get_one_point_heatmap,get_two_grasp_heatmap
+
 
 class ClothesHangEnv(FlexEnv):
     def __init__(self,mesh_category_path:str,config:Config,clothes:Clothes=None):
@@ -32,14 +34,31 @@ class ClothesHangEnv(FlexEnv):
         #                                        picker_low=(-5, 0., -5), picker_high=(5, 5, 5),picker_radius=config.task_config.picker_radius,picker_size=config.task_config.picker_size)
         self.up_camera=config["camera_config"]()
         self.vertice_camera=deepcopy(config.camera_config)
-        self.vertice_camera.cam_position=[0, 2.5,  3]    #second is height;third is y
+        self.vertice_camera.cam_position=[0, 2.7,  3]    #second is height;third is y
 
         self.vertice_camera.cam_angle=[0,-np.pi/7,0]     #5
         self.image_buffer=[]
 
+    def get_heatmap(self,id,pc,select_points):
+        pc=pc.cpu().numpy()
+        pc=pc[0]
+        pc=pc[:,:3]
+        heatmap_path=os.path.join(self.store_path,"heatmap")
+        if len(select_points)==1:
+            get_one_point_heatmap(pc,pc[select_points[0]],np.zeros(512),save_path=heatmap_path,name=str(id))
+        if len(select_points)==2:
+            get_two_grasp_heatmap(pc,pc[select_points[0]],np.zeros(512),pc[select_points[1]],np.zeros(512),save_path=heatmap_path,name=str(id))
+        if len(select_points)==4:
+            get_four_points_heatmap(pc,pc[select_points[0]],np.zeros(512),pc[select_points[1]],np.zeros(512),pc[select_points[2]],np.zeros(512),pc[select_points[3]],np.zeros(512),save_path=heatmap_path,name=str(id))
+
+
+
+
     def step_sim_fn(self):
         pyflex.step()
         rgb,depth=pyflex.render()
+        rgb=np.flip(rgb.reshape([self.config.camera_config.cam_size[0],self.config.camera_config.cam_size[1],4]),0)[:,:,:3].astype(np.uint8)
+        cv2.cvtColor(rgb,cv2.COLOR_RGB2BGR,rgb)      
         self.image_buffer.append(rgb)
     
     def export_image(self):
